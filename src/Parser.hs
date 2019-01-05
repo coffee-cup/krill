@@ -11,6 +11,9 @@ import           Text.Megaparsec.Error
 import           Lexer
 import           Syntax
 
+pName :: Parser Name
+pName = pText identifier
+
 -- Literal Parsers
 
 pNumberLit :: Parser Literal
@@ -41,16 +44,22 @@ pBoolLit = p <?> "boolean"
     p = (rword "true" >> return (LitBool True))
       <|> (rword "false" >> return (LitBool False))
 
+pAtomLit :: Parser Literal
+pAtomLit = p <?> "atom"
+  where
+    p = do
+      colon
+      x <- pName
+      return $ LitAtom x
+
 pLiteral :: Parser Literal
 pLiteral = pNumberLit
   <|> pCharLit
   <|> pStringLit
   <|> pBoolLit
+  <|> pAtomLit
 
 -- Expressions
-
-pName :: Parser Name
-pName = pText identifier
 
 pExprLiteral :: Parser Expr
 pExprLiteral = ELit <$> pLiteral <?> "literal"

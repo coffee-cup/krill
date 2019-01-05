@@ -60,6 +60,7 @@ comma = void $ lexeme $ char ','
 equals = void $ lexeme $ char '='
 implies = void $ lexeme $ symbol "=>"
 pipe = void $ lexeme $ char '|'
+colon = void $ lexeme $ symbol ":"
 dcolon = void $ lexeme $ symbol "::"
 quote = void $ lexeme $ char '\''
 dquote = void $ lexeme $ char '"'

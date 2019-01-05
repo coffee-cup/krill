@@ -23,6 +23,7 @@ data Literal
   | LitString T.Text     -- "a"
   | LitChar Char         -- 'a'
   | LitBool Bool         -- true
+  | LitAtom T.Text       -- :atom
   deriving (Eq, Ord, Show)
 
 -- Statements
