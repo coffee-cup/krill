@@ -3,13 +3,13 @@ module Lexer where
 import           Control.Applicative        hiding (many, some)
 import           Control.Monad              (void)
 import           Data.Char
-import qualified Data.Text.Lazy             as L
+import qualified Data.Text.Lazy             as T
 import           Data.Void
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 
-type Parser = Parsec Void L.Text
+type Parser = Parsec Void T.Text
 
 lineComment :: Parser ()
 lineComment = L.skipLineComment "#"
@@ -32,8 +32,8 @@ lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc
 
 -- Parse a fixed string
-symbol :: String -> Parser L.Text
-symbol = L.symbol sc . L.pack
+symbol :: T.Text -> Parser T.Text
+symbol = L.symbol sc
 
 -- Parse something between parenthesis
 parens :: Parser a -> Parser a
@@ -92,7 +92,7 @@ reservedWords =
 
 -- Parse a reserved word
 rword :: String -> Parser ()
-rword w = (lexeme . try) (string (L.pack w) *> notFollowedBy alphaNumChar)
+rword w = (lexeme . try) (string (T.pack w) *> notFollowedBy alphaNumChar)
 
 -- Parse an identifier
 identifier :: Parser String
@@ -125,7 +125,13 @@ lowerIdentifier = predIdentifier (p . head) "does not start with a lowercase let
     p = flip elem ('_' : ['a'..'z'])
 
 -- Convert char in Parser to string
-pCharToString :: Parser Char -> Parser L.Text
+pCharToString :: Parser Char -> Parser T.Text
 pCharToString pc = do
   c <- pc
-  return $ L.pack $ show c
+  return $ T.pack $ show c
+
+-- String parser to Text
+pText :: Parser String -> Parser T.Text
+pText p = do
+  s <- p
+  return $ T.pack s

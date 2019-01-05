@@ -1,10 +1,11 @@
 module Parser where
 
-import qualified Data.Text.Lazy             as T
+import           Control.Monad.Combinators.Expr
+import qualified Data.Text.Lazy                 as T
 import           Data.Void
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
-import qualified Text.Megaparsec.Char.Lexer as L
+import qualified Text.Megaparsec.Char.Lexer     as L
 import           Text.Megaparsec.Error
 
 import           Lexer
@@ -45,6 +46,59 @@ pLiteral = pNumberLit
   <|> pCharLit
   <|> pStringLit
   <|> pBoolLit
+
+-- Expressions
+
+pName :: Parser Name
+pName = pText identifier
+
+pExprLiteral :: Parser Expr
+pExprLiteral = ELit <$> pLiteral <?> "literal"
+
+pExprVar :: Parser Expr
+pExprVar = EVar <$> pName
+
+mkPrefix :: T.Text -> Expr -> Expr
+mkPrefix name = EUnOp name
+
+mkBinary :: T.Text -> Expr -> Expr -> Expr
+mkBinary name = EBinOp name
+
+prefix :: T.Text -> Operator Parser Expr
+prefix name = Prefix (mkPrefix <$> symbol name)
+
+binary :: T.Text -> Operator Parser Expr
+binary name = InfixL (mkBinary <$> symbol name)
+
+operators :: [[Operator Parser Expr]]
+operators =
+  [ [ prefix "-"
+    , prefix "!" ]
+  , [ binary "*"
+    , binary "/" ]
+  , [ binary "+"
+    , binary "-" ]
+  , [ binary "=="
+    , binary "<="
+    , binary ">="
+    , binary "<"
+    , binary ">" ]
+  , [ binary "&&" ]
+  , [ binary "||" ] ]
+
+pExprParens :: Parser Expr
+pExprParens = EParens <$> parens pExpr <?> "parens"
+
+aexpr :: Parser Expr
+aexpr = do
+  r <- some $ choice [ pExprParens
+                     , pExprLiteral
+                     , pExprVar
+                     ]
+  return $ Prelude.foldl1 EApp r
+
+pExpr :: Parser Expr
+pExpr = makeExprParser aexpr operators
 
 contents :: Parser a -> Parser a
 contents p = do

@@ -11,7 +11,8 @@ data Expr
  | EBinOp Name Expr Expr -- a + b
  | EUnOp Name Expr       -- !a
  | EVar Name             -- a
- | ELam [Name] [Stmt]
+ | ELam [Name] [Stmt]    -- x -> x + 1
+ | ELit Literal          -- 3
  | EParens Expr          -- (a)
  deriving (Eq, Ord, Show)
 
