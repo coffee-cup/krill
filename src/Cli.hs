@@ -3,10 +3,14 @@ module Cli
   ) where
 
 import           Control.Monad.State
-import           Flags
-
 import           Data.Monoid
+import           Data.Text.Lazy      as T
+import           Data.Text.Lazy.IO   as T
 import           Options.Applicative
+
+import           Compiler
+import           Flags
+import           Monad
 
 data LineOpts
   = UseReplLineOpts
@@ -35,13 +39,26 @@ parseLineOpts = subparser $
 parseOptions :: Parser Options
 parseOptions = Options <$> parseLineOpts <*> parseFlags
 
+runFile :: CompilerState -> FilePath -> IO ()
+runFile cs fname = do
+  mtext <- getFileContents fname
+  let cs' = cs { _fname = Just fname, _src = mtext }
+
+  (res, _) <- runCompilerM compileFile cs'
+  case res of
+    Left err -> print err
+    Right _  -> T.putStrLn "\nCompiled"
+
 krillEntry :: Options -> IO ()
-krillEntry opt =
-  case lineOpt opt of
-    UseReplLineOpts ->
-      putStrLn "repl"
-    RunFileLineOpts fname ->
-      putStrLn ("file: " ++ fname)
+krillEntry opts =
+  let
+    cs = emptyCS { _flags = flags opts }
+  in
+    case lineOpt opts of
+        UseReplLineOpts ->
+          T.putStrLn "repl"
+        RunFileLineOpts fname ->
+          runFile cs fname
 
 cliIFace :: IO ()
 cliIFace = execParser opts >>= krillEntry
