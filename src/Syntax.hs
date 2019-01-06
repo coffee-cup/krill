@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Syntax where
 
 import qualified Data.Text.Lazy as T
@@ -53,3 +55,13 @@ data Module
 
 mkEApp :: [Expr] -> Expr
 mkEApp = foldl1 EApp
+
+viewVars :: Expr -> [Name]
+viewVars (ELam ns _) = ns
+viewVars _           = []
+
+viewApp :: Expr -> (Expr, [Expr])
+viewApp = go []
+  where
+    go !xs (EApp a b) = go (b : xs) a
+    go xs f           = (f, xs)

@@ -16,6 +16,7 @@ import           Compiler
 import           Flags
 import           Monad
 import           Pretty
+import           Pretty
 
 -- Types
 
@@ -28,10 +29,10 @@ initState = IState
 
 type Repl a = HaskelineT (StateT IState IO) a
 
-hoistErr :: Show e => Either e a -> Repl ()
+hoistErr :: Pretty e => Either e a -> Repl ()
 hoistErr (Right val) = return ()
 hoistErr (Left err) =
-  liftIO $ print err
+  liftIO $ T.putStrLn $ ppg err
 
 updateCompilerState :: CompilerState -> Repl ()
 updateCompilerState cs = modify (\st -> st { _compilerState = cs })

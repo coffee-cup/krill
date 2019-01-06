@@ -11,6 +11,7 @@ import           Options.Applicative
 import           Compiler
 import           Flags
 import           Monad
+import           Pretty
 import           Repl
 
 data LineOpts
@@ -47,7 +48,7 @@ runFile cs fname = do
 
   (res, _) <- runCompilerM compileFile cs'
   case res of
-    Left err -> print err
+    Left err -> T.putStrLn $ ppg err
     Right _  -> T.putStrLn "\nCompiled"
 
 krillEntry :: Options -> IO ()
