@@ -11,8 +11,8 @@ import           Prelude          hiding ((<>))
 import           Text.PrettyPrint
 
 import           CompilerError
-import           Eval
 import           Syntax
+import           Value
 
 class Pretty p where
   ppr :: Int -> p -> Doc
@@ -80,13 +80,17 @@ instance Pretty CompilerError where
     FileNotFound fname -> "File:" <+> pp fname <+> "not found"
     ReplCommandError s -> pp s
     ParseError s       -> pp s
-    EvalError e        -> pp e
+    EvaluationError e  -> pp e
 
 instance Pretty EvalError where
   ppr _ e = case e of
     TypeMismatch txt val -> "Error Type Mismatch:" <+> pp txt <+> pp val
     UnboundVar txt       -> "Error Unbound Variable:" <+> pp txt
-    Default val          -> "Error Evaluation " <+> pp val
+    NumArgs n args ->
+      "Error Number of Arguments, expected" <+> integer n <+> "recieved args: " <+> hsep (fmap pp args)
+    NotFunction val -> "Error Not a Function:" <+> pp val
+    OperatorNotFound n -> "Error Operator `" <> pp n <> "` Not Found"
+    Default val          -> "Error Evaluation:" <+> pp val
 
 -- Syntax
 

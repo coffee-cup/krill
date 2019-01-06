@@ -1,10 +1,10 @@
 module CompilerError where
 
-import           Eval
+import           Value
 
 data CompilerError
   = FileNotFound FilePath
   | ReplCommandError String
   | ParseError String
-  | EvalError EvalError
+  | EvaluationError EvalError
   deriving (Eq)

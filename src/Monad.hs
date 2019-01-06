@@ -26,7 +26,8 @@ newtype CompilerM a = Compiler { runCompiler :: CompilerMonad a }
     , MonadIO
     , MonadFail
     , MonadState CompilerState
-    , MonadError CompilerError)
+    , MonadError CompilerError
+    )
 
 -- Compiler State
 

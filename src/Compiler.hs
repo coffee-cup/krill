@@ -7,10 +7,13 @@ import           Data.Text.Lazy.IO    as T
 import           System.Directory
 
 import           CompilerError
+import           Eval
 import           Flags
 import           Monad
 import           Parser
+import           Pretty
 import           Syntax
+import           Value
 
 compileFile :: CompilerM Module
 compileFile = do
@@ -25,7 +28,11 @@ compileFile = do
 compileLine :: CompilerM ()
 compileLine = do
   Just text <- gets _src
-  ast <- parseText text
+  stmt <- parseText text
+  val <- inIO $ runEval (evalStmt stmt) basicEnv
+  case val of
+    Right val' -> inIO $ T.putStrLn $ ppg val'
+    Left e     -> throwError $ EvaluationError e
   return ()
 
 parseText :: T.Text -> CompilerM Stmt
