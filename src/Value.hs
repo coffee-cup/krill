@@ -46,7 +46,7 @@ instance Eq IFunc where
 data EvalError
   = TypeMismatch T.Text Value
   | UnboundVar T.Text
-  | NumArgs Integer [Value]
+  | NumArgs Integer Integer
   | NotFunction Value
   | OperatorNotFound Name
   | Default T.Text

@@ -28,6 +28,16 @@ getOperator n = do
     Just x  -> return x
     Nothing -> throwError $ OperatorNotFound n
 
+runFunction :: Value -> [Value] -> Eval Value
+runFunction funVar args = do
+  env <- ask
+  case funVar of
+    (Fun (IFunc fn))             -> fn args
+    (Lambda (IFunc fn) boundenv) -> do
+      let f = fn args
+      local (const (boundenv <> env)) f
+    _ -> throwError $ NotFunction funVar
+
 evalLit :: Literal -> Eval Value
 evalLit (LitNumber x) = return $ Number x
 evalLit (LitString x) = return $ String x
@@ -38,27 +48,19 @@ evalLit (LitAtom x)   = return $ Atom x
 evalExpr :: Expr -> Eval Value
 evalExpr (ELit l) = evalLit l
 evalExpr (EApp e1 e2) = do
-  env <- ask
   funVar <- evalExpr e1
   arg <- evalExpr e2
-  case funVar of
-    (Fun (IFunc fn))             -> fn [arg]
-    (Lambda (IFunc fn) boundenv) -> do
-      let f = fn [arg]
-      r <- local (const (boundenv <> env)) f
-      return r
-    _ -> throwError $ NotFunction funVar
+  runFunction funVar [arg]
 evalExpr (EBinOp n e1 e2) = do
-  env <- ask
   v1 <- evalExpr e1
   v2 <- evalExpr e2
   funVar <- getOperator n
-  case funVar of
-    (Fun (IFunc fn))             -> fn [v1, v2]
-    (Lambda (IFunc fn) boundenv) -> do
-      let f = fn [v1, v2]
-      local (const (boundenv <> env)) f
-    _ -> throwError $ NotFunction funVar
+  runFunction funVar [v1, v2]
+evalExpr (EUnOp n e) = do
+  v <- evalExpr e
+  funVar <- getOperator n
+  runFunction funVar [v]
+evalExpr (EParens e) = evalExpr e
 
 evalExpr _ = throwError $ Default "eval expr fall through"
 

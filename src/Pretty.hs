@@ -84,10 +84,10 @@ instance Pretty CompilerError where
 
 instance Pretty EvalError where
   ppr _ e = case e of
-    TypeMismatch txt val -> "Error Type Mismatch:" <+> pp txt <+> pp val
+    TypeMismatch txt val -> "Error Type Mismatch: cannot perform" <+> pp txt <+> "with" <+> pp val
     UnboundVar txt       -> "Error Unbound Variable:" <+> pp txt
     NumArgs n args ->
-      "Error Number of Arguments, expected" <+> integer n <+> "recieved args: " <+> hsep (fmap pp args)
+      "Error Number of Arguments, expected:" <+> integer n <+> "recieved:" <+> integer n
     NotFunction val -> "Error Not a Function:" <+> pp val
     OperatorNotFound n -> "Error Operator `" <> pp n <> "` Not Found"
     Default val          -> "Error Evaluation:" <+> pp val
@@ -132,11 +132,6 @@ instance Pretty Block where
       where
         pss = vcat (fmap pp ss)
 
-      -- hang (text "if" <+> pp c) 2
-      --        (vcat [ hang (text "then") 2 (ppexprs t)
-      --              , hang (text "else") 2 (ppexprs f)
-      --              ])
-
 instance Pretty Stmt where
   ppr p s = case s of
     SExpr e  -> ppr p e
@@ -155,7 +150,7 @@ instance Pretty Module where
 instance Pretty Value where
   ppr p x = case x of
     Number x   -> ppcond (isInt x) (integer $ round x) (double x)
-    Atom x     -> ":" <+> pp x
+    Atom x     -> ":" <> pp x
     Char x     -> quotes $ char x
     String x   -> doubleQuotes $ pp x
     Bool True  -> text "true"
