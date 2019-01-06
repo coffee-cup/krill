@@ -16,7 +16,6 @@ import           Compiler
 import           Flags
 import           Monad
 import           Pretty
-import           Pretty
 
 -- Types
 

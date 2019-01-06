@@ -77,23 +77,23 @@ banner = render $
 
 instance Pretty CompilerError where
   ppr _ e = case e of
-    FileNotFound fname -> "File:" <> pp fname <> "not found"
+    FileNotFound fname -> "File:" <+> pp fname <+> "not found"
     ReplCommandError s -> pp s
     ParseError s       -> pp s
     EvalError e        -> pp e
 
 instance Pretty EvalError where
   ppr _ e = case e of
-    TypeMismatch txt val -> "Error Type Mismatch:" <> pp txt <> pp val
-    UnboundVar txt       -> "Error Unbound Variable:" <> pp txt
-    Default val          -> "Error Evaluation " <> pp val
+    TypeMismatch txt val -> "Error Type Mismatch:" <+> pp txt <+> pp val
+    UnboundVar txt       -> "Error Unbound Variable:" <+> pp txt
+    Default val          -> "Error Evaluation " <+> pp val
 
 -- Syntax
 
 instance Pretty Literal where
   ppr _ l = case l of
     LitNumber x   -> ppcond (isInt x) (integer $ round x) (double x)
-    LitAtom x     -> ":" <+> pp x
+    LitAtom x     -> ":" <> pp x
     LitChar x     -> quotes $ char x
     LitString x   -> doubleQuotes $ pp x
     LitBool True  -> text "true"
@@ -105,32 +105,43 @@ ppapp p e = parensIf (p>0) $ ppr p f <+> args
     (f, xs) = viewApp e
     args = sep $ fmap (ppr (p+1)) xs
 
+block :: Doc -> Block -> Doc
+block d b@(Block [s]) = d <+> pp b
+block d b             = (hang (d <+> lbrace) 2 (pp b)) <> "\n}"
+
 instance Pretty Expr where
   ppr p ex = case ex of
     ELit l          -> ppr p l
     e@(EApp {})     -> ppapp p e
-    EBinOp op e1 e2 -> ppr p e1 <> pp op <> ppr p e2
-    EUnOp op e      -> pp op <+> ppr p e
+    EBinOp op e1 e2 -> ppr p e1 <+> pp op <+> ppr p e2
+    EUnOp op e      -> pp op <> ppr p e
     EVar n -> pp n
     e@(ELam _ b) ->
-      parensIf (p>0) $ hsep vars <> "->" <+> pp b
+      parensIf (p>0) $ hsep vars <+> "->" <> pp b
       where vars = fmap pp (viewVars e)
     EParens e -> parens (pp e)
 
 instance Pretty Block where
   ppr _ (Block stmts) = case stmts of
     [s] -> pp s
-    ss  -> text "{\n" <> nest 2 (vcat (fmap pp ss))
+    ss  -> pss
+      where
+        pss = vcat (fmap pp ss)
+
+      -- hang (text "if" <+> pp c) 2
+      --        (vcat [ hang (text "then") 2 (ppexprs t)
+      --              , hang (text "else") 2 (ppexprs f)
+      --              ])
 
 instance Pretty Stmt where
   ppr p s = case s of
     SExpr e  -> ppr p e
-    SAss n e -> pp n <> equals <> ppr p e
+    SAss n e -> pp n <+> equals <+> ppr p e
 
 instance Pretty Decl where
   ppr _ d = case d of
     Func n args b ->
-      pp n <> hsep (fmap pp args) <> "->" <> pp b
+      block (pp n <+> hsep (fmap pp args) <+> "->") b
 
 instance Pretty Module where
   ppr _ (Module decls) = vcat (intersperse "" (fmap pp decls))

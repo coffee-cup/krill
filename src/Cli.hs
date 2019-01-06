@@ -48,8 +48,8 @@ runFile cs fname = do
 
   (res, _) <- runCompilerM compileFile cs'
   case res of
-    Left err -> T.putStrLn $ ppg err
-    Right _  -> T.putStrLn "\nCompiled"
+    Left err  -> T.putStrLn $ ppg err
+    Right ast -> T.putStrLn $ ppg ast
 
 krillEntry :: Options -> IO ()
 krillEntry opts =
