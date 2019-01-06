@@ -10,5 +10,8 @@ import           Syntax
 spec :: Spec
 spec = do
   describe "Helpers" $ do
-    it "makes EApp" $ do
+    it "makes EApp with 2 args" $ do
       mkEApp [EVar "a", EVar "b"] `shouldBe` EApp (EVar "a") (EVar "b")
+
+    it "makes EApp with 3 args" $ do
+      mkEApp [EVar "a", EVar "b", EVar "c"] `shouldBe` EApp (EApp (EVar "a") (EVar "b")) (EVar "c")
