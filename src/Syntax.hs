@@ -40,13 +40,13 @@ newtype Block = Block [Stmt]
 -- Declarations
 
 data Decl
-  = Fun Name [Name] Block
+  = Func Name [Name] Block
   deriving (Eq, Ord, Show)
 
 -- Module
 
 data Module
-  = Module (Maybe Name) [Decl]
+  = Module [Decl]
   deriving (Eq, Ord, Show)
 
 -- Helpers

@@ -139,6 +139,22 @@ pBlock = pMultiLine <|> pSingleLine
       ss <- (braces . many) (pStmt <* try scn)
       return $ Block ss
 
+-- Declarations
+
+pFuncDecl :: Parser Decl
+pFuncDecl = do
+  n <- pName
+  args <- many pName
+  arrow
+  Func n args <$> pBlock
+
+pDecl :: Parser Decl
+pDecl = pFuncDecl
+
+-- Module
+
+pModule :: Parser Module
+pModule = Module <$> many pDecl
 
 contents :: Parser a -> Parser a
 contents p = do
@@ -151,8 +167,15 @@ parseUnpack res = case res of
   Right a  -> Right a
   Left err -> Left $ errorBundlePretty err
 
+parseModule :: T.Text -> T.Text -> Either String Module
+parseModule input = runKrillParser input pModule
+
 parseSimple :: Parser a -> T.Text -> Either String a
 parseSimple p = parseUnpack . runParser (contents p) "<stdin>" . T.strip
 
 parseSimpleString :: Parser a -> String -> Either String a
 parseSimpleString p = parseSimple p . T.pack
+
+runKrillParser :: T.Text -> Parser a -> T.Text -> Either String a
+runKrillParser input p =
+  parseUnpack . runParser (contents p) (T.unpack input) . T.strip
