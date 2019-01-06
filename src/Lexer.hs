@@ -31,17 +31,21 @@ sc = L.space (void $ takeWhile1P Nothing f) lineComment blockComment
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc
 
+-- Consume whitespace and newline after
+lexemeNew :: Parser a -> Parser a
+lexemeNew = L.lexeme scn
+
 -- Parse a fixed string
 symbol :: T.Text -> Parser T.Text
 symbol = L.symbol sc
 
 -- Parse something between parenthesis
 parens :: Parser a -> Parser a
-parens = between (char '(') (char ')')
+parens = between (lexeme $ char '(') (lexeme $ char ')')
 
 -- Parse something between braces
 braces :: Parser a -> Parser a
-braces = between (char '{') (char '}')
+braces = between (lexemeNew $ char '{') (lexemeNew $ char '}')
 
 -- Parse an integer
 integer :: Parser Integer
@@ -53,19 +57,19 @@ double = lexeme L.float
 
 -- Common symbols
 
-comma, equals, implies, pipe, dcolon, quote, dquote, bslash, arrow
+comma, colon, equals, implies, pipe, dcolon, quote, dquote, bslash, arrow
   :: Parser ()
 
+arrow = void $ lexeme $ symbol "->"
+bslash = void $ lexeme $ char '\\'
+colon = void $ lexeme $ symbol ":"
 comma = void $ lexeme $ char ','
+dcolon = void $ lexeme $ symbol "::"
+dquote = void $ lexeme $ char '"'
 equals = void $ lexeme $ char '='
 implies = void $ lexeme $ symbol "=>"
 pipe = void $ lexeme $ char '|'
-colon = void $ lexeme $ symbol ":"
-dcolon = void $ lexeme $ symbol "::"
 quote = void $ lexeme $ char '\''
-dquote = void $ lexeme $ char '"'
-bslash = void $ lexeme $ char '\\'
-arrow = void $ lexeme $ symbol "->"
 
 -- Parse an escaped character
 escapedChars :: Parser Char

@@ -109,6 +109,37 @@ aexpr = do
 pExpr :: Parser Expr
 pExpr = makeExprParser aexpr operators
 
+-- Statements
+
+pStmtExpr :: Parser Stmt
+pStmtExpr = do
+  e <- pExpr
+  try scn
+  return $ SExpr e
+
+pStmtAss :: Parser Stmt
+pStmtAss = do
+  n <- pName
+  equals
+  e <- pExpr
+  try scn
+  return $ SAss n e
+
+pStmt :: Parser Stmt
+pStmt = try pStmtAss
+  <|> pStmtExpr
+
+pBlock :: Parser Block
+pBlock = pMultiLine <|> pSingleLine
+  where
+    pSingleLine = do
+      s <- pStmt
+      return $ Block [s]
+    pMultiLine = do
+      ss <- (braces . many) (pStmt <* try scn)
+      return $ Block ss
+
+
 contents :: Parser a -> Parser a
 contents p = do
   r <- lexeme p

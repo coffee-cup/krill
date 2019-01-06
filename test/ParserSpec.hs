@@ -67,6 +67,9 @@ spec = do
       it "parens literal" $
         parseSimple pExpr "(3)" `shouldBe` (Right $ EParens $ ELit $ LitNumber 3)
 
+      it "parens with spaces" $
+        parseSimple pExpr "( 3 )" `shouldBe` (Right $ EParens $ ELit $ LitNumber 3)
+
       it "parens arithmetic" $
         parseSimple pExpr "(a + 3)" `shouldBe` (Right $ EParens $
                                                (EBinOp "+" (EVar "a"))
@@ -185,6 +188,24 @@ spec = do
                                                                    (EUnOp "!"
                                                                     (ELit $ LitBool True)))
                                                                  (ELit $ LitBool False)))
+
+  describe "Statements" $ do
+    it "parses statement expression" $
+      parseSimple pStmt "a" `shouldBe` (Right $ SExpr $ EVar "a")
+
+    it "parses assignment" $
+      parseSimple pStmt "a = b" `shouldBe` (Right $ SAss "a" (EVar "b"))
+
+  describe "Blocks" $ do
+    it "parses single line block" $
+      parseSimple pBlock "a" `shouldBe` (Right $ Block [SExpr $ EVar "a"])
+
+    it "parses multiline block" $
+      parseSimpleUnlines pBlock ["{", "  a", "b", "}"] `shouldBe` (Right $ Block
+                                                                  [ SExpr $ EVar "a"
+                                                                  , SExpr $ EVar "b"
+                                                                  ])
+
 
 parseSimpleUnlines :: Parser a -> [String] -> Either String a
 parseSimpleUnlines p =

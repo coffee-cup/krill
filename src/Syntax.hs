@@ -11,7 +11,7 @@ data Expr
  | EBinOp Name Expr Expr -- a + b
  | EUnOp Name Expr       -- !a
  | EVar Name             -- a
- | ELam [Name] [Stmt]    -- x -> x + 1
+ | ELam [Name] Block     -- x -> x + 1
  | ELit Literal          -- 3
  | EParens Expr          -- (a)
  deriving (Eq, Ord, Show)
@@ -31,19 +31,23 @@ data Literal
 data Stmt
   = SExpr Expr           -- a
   | SAss Name Expr       -- a = b
-  | SIf Expr Expr Expr   -- if cond then expr else expr
+  | SIf Expr Block Block -- if cond then expr else expr
+  deriving (Eq, Ord, Show)
+
+newtype Block = Block [Stmt]
   deriving (Eq, Ord, Show)
 
 -- Declarations
 
 data Decl
-  = Fun Name [Name] [Stmt]
+  = Fun Name [Name] Block
   deriving (Eq, Ord, Show)
 
 -- Module
 
 data Module
   = Module (Maybe Name) [Decl]
+  deriving (Eq, Ord, Show)
 
 -- Helpers
 
