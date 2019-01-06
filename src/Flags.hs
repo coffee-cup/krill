@@ -1,5 +1,6 @@
 module Flags where
 
+import qualified Data.Text.Lazy      as T
 import           Options.Applicative
 
 data Flags = Flags

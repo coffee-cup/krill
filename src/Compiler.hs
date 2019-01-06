@@ -18,9 +18,23 @@ compileFile = do
   Just src <- gets _src
   case parseModule (T.pack fname) src of
     Right mod -> do
-      ifSet dumpAst (dumpValues "Frontend" mod)
+      ifSet dumpAst (dumpValues "Ast" mod)
       return mod
     Left s -> throwError $ ParseError s
+
+compileLine :: CompilerM ()
+compileLine = do
+  Just text <- gets _src
+  ast <- parseText text
+  return ()
+
+parseText :: T.Text -> CompilerM Stmt
+parseText input = do
+  let ast = parseStmt input
+  ifSet dumpAst (dumpValues "Ast" ast)
+  case ast of
+    Right ast' -> return ast'
+    Left s     -> throwError $ ParseError s
 
 dumpValues :: Show a => String -> a -> CompilerM ()
 dumpValues header v = do

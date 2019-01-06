@@ -11,6 +11,7 @@ import           Options.Applicative
 import           Compiler
 import           Flags
 import           Monad
+import           Repl
 
 data LineOpts
   = UseReplLineOpts
@@ -56,7 +57,7 @@ krillEntry opts =
   in
     case lineOpt opts of
         UseReplLineOpts ->
-          T.putStrLn "repl"
+          repl cs
         RunFileLineOpts fname ->
           runFile cs fname
 

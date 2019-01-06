@@ -170,6 +170,9 @@ parseUnpack res = case res of
 parseModule :: T.Text -> T.Text -> Either String Module
 parseModule input = runKrillParser input pModule
 
+parseStmt :: T.Text -> Either String Stmt
+parseStmt = parseSimple pStmt
+
 parseSimple :: Parser a -> T.Text -> Either String a
 parseSimple p = parseUnpack . runParser (contents p) "<stdin>" . T.strip
 
