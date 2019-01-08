@@ -54,14 +54,6 @@ runFunction l funVar args = do
       local (const (boundenv <> env)) f
     _ -> throwError $ NotFunction l funVar
 
-runOperator :: Loc -> Value -> [Value] -> Eval Value
-runOperator l (Fun (IFunc fn)) args = do
-  env <- ask
-  res <- (Eval . liftIO) $ runEval (fn args) env
-  case res of
-    Left err -> throwError $ addLoc l err
-    Right r  -> return r
-
 evalLit :: Literal -> Eval Value
 evalLit (LitNumber x) = return $ Number x
 evalLit (LitString x) = return $ String x

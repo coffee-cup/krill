@@ -60,13 +60,6 @@ instance Location EvalError where
     NotFunction l _      -> l
     OperatorNotFound l _ -> l
     Default l _          -> l
-  addLoc l e = case e of
-    TypeMismatch _ a b   -> TypeMismatch l a b
-    UnboundVar _ a       -> UnboundVar l a
-    NumArgs _ a b        -> NumArgs l a b
-    NotFunction _ a      -> NotFunction l a
-    OperatorNotFound _ a -> OperatorNotFound l a
-    Default _ a          -> Default l a
 
 runEval :: Eval a -> EnvCtx -> IO (Either EvalError a)
 runEval = runReaderT . runExceptT . unEval
