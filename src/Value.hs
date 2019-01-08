@@ -44,13 +44,29 @@ instance Eq IFunc where
   (==) _ _ = False
 
 data EvalError
-  = TypeMismatch T.Text Value
-  | UnboundVar T.Text
-  | NumArgs Integer Integer
-  | NotFunction Value
-  | OperatorNotFound Name
-  | Default T.Text
+  = TypeMismatch Loc T.Text Value
+  | UnboundVar Loc T.Text
+  | NumArgs Loc Integer Integer
+  | NotFunction Loc Value
+  | OperatorNotFound Loc Name
+  | Default Loc T.Text
   deriving (Eq)
+
+instance Location EvalError where
+  loc e = case e of
+    TypeMismatch l _ _   -> l
+    UnboundVar l _       -> l
+    NumArgs l _ _        -> l
+    NotFunction l _      -> l
+    OperatorNotFound l _ -> l
+    Default l _          -> l
+  addLoc l e = case e of
+    TypeMismatch _ a b   -> TypeMismatch l a b
+    UnboundVar _ a       -> UnboundVar l a
+    NumArgs _ a b        -> NumArgs l a b
+    NotFunction _ a      -> NotFunction l a
+    OperatorNotFound _ a -> OperatorNotFound l a
+    Default _ a          -> Default l a
 
 runEval :: Eval a -> EnvCtx -> IO (Either EvalError a)
 runEval = runReaderT . runExceptT . unEval

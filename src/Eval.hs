@@ -21,22 +21,30 @@ import           Value
 basicEnv :: EnvCtx
 basicEnv = Map.fromList primEnv
 
-getOperator :: Name -> Eval Value
-getOperator n = do
+getOperator :: Loc -> Name -> Eval Value
+getOperator l n = do
   env <- ask
   case Map.lookup n env of
     Just x  -> return x
-    Nothing -> throwError $ OperatorNotFound n
+    Nothing -> throwError $ OperatorNotFound l n
 
-runFunction :: Value -> [Value] -> Eval Value
-runFunction funVar args = do
+runFunction :: Loc -> Value -> [Value] -> Eval Value
+runFunction l funVar args = do
   env <- ask
   case funVar of
     (Fun (IFunc fn))             -> fn args
     (Lambda (IFunc fn) boundenv) -> do
       let f = fn args
       local (const (boundenv <> env)) f
-    _ -> throwError $ NotFunction funVar
+    _ -> throwError $ NotFunction l funVar
+
+runOperator :: Loc -> Value -> [Value] -> Eval Value
+runOperator l (Fun (IFunc fn)) args = do
+  env <- ask
+  res <- (Eval . liftIO) $ runEval (fn args) env
+  case res of
+    Left err -> throwError $ addLoc l err
+    Right r  -> return r
 
 evalLit :: Literal -> Eval Value
 evalLit (LitNumber x) = return $ Number x
@@ -50,20 +58,20 @@ evalExpr (ELit _ l) = evalLit l
 evalExpr (EApp _ e1 e2) = do
   funVar <- evalExpr e1
   arg <- evalExpr e2
-  runFunction funVar [arg]
-evalExpr (EBinOp _ n e1 e2) = do
+  runFunction (loc e1) funVar [arg]
+evalExpr ex@(EBinOp _ n e1 e2) = do
   v1 <- evalExpr e1
   v2 <- evalExpr e2
-  funVar <- getOperator n
-  runFunction funVar [v1, v2]
-evalExpr (EUnOp _ n e) = do
+  funVar <- getOperator (loc ex) n
+  runOperator (loc e1) funVar [v1, v2]
+evalExpr ex@(EUnOp _ n e) = do
   v <- evalExpr e
-  funVar <- getOperator n
-  runFunction funVar [v]
+  funVar <- getOperator (loc e) n
+  runFunction (loc ex) funVar [v]
 evalExpr (EParens _ e) = evalExpr e
 
-evalExpr _ = throwError $ Default "eval expr fall through"
+evalExpr e = throwError $ Default (loc e) "eval expr fall through"
 
 evalStmt :: Stmt -> Eval Value
 evalStmt (SExpr _ e) = evalExpr e
-evalStmt _           = throwError $ Default "eval stmt fall through"
+evalStmt ex          = throwError $ Default (loc ex) "eval stmt fall through"

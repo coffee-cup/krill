@@ -57,6 +57,38 @@ data Module
 
 -- Helpers
 
+class Location a where
+  loc :: a -> Loc
+  addLoc :: Loc -> a -> a
+
+instance Location Expr where
+  loc e = case e of
+    EApp l _ _     -> l
+    EBinOp l _ _ _ -> l
+    EUnOp l _ _    -> l
+    EVar l _       -> l
+    ELam l _ _     -> l
+    ELit l _       -> l
+    EParens l _    -> l
+  addLoc l e = case e of
+    EApp _ e1 e2     -> EApp l e1 e2
+    EBinOp _ n e1 e2 -> EBinOp l n e1 e2
+    EUnOp _ n e1     -> EUnOp l n e1
+    EVar _ n         -> EVar l n
+    ELam _ ns b      -> ELam l ns b
+    ELit _ e         -> ELit l e
+    EParens _ e      -> EParens l e
+
+instance Location Stmt where
+  loc s = case s of
+    SExpr l _   -> l
+    SAss l _ _  -> l
+    SIf l _ _ _ -> l
+  addLoc l e = case e of
+    SExpr _ e1    -> SExpr l e1
+    SAss _ n e1   -> SAss l n e1
+    SIf _ c e1 e2 -> SIf l c e1 e2
+
 mkEApp :: [Expr] -> Expr
 mkEApp = foldl1 (EApp NoLoc)
 
