@@ -84,7 +84,7 @@ binary name = mkBinary <$> getLoc <*> symbol name <?> "binary operator"
 
 bn, bl, br :: T.Text -> Operator Parser Expr
 br = InfixR . binary
-bl = InfixL.  binary
+bl = InfixL .  binary
 bn = InfixN . binary
 
 binaryr :: T.Text -> Operator Parser Expr
