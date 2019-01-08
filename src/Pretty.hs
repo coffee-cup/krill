@@ -90,7 +90,8 @@ instance Pretty CompilerError where
 
 instance Pretty EvalError where
   ppr _ e = case e of
-    TypeMismatch l txt val -> withLocation l ("Error Type Mismatch: cannot perform" <+> pp txt <+> "with" <+> pp val)
+    TypeMismatch l txt val -> withLocation l ("Type Mismatch.\n\tExpected:"
+                                              <+> pp txt <+> "\n\tReceived:" <+> pp val)
     UnboundVar l txt       -> withLocation l ("Error Unbound Variable:" <+> pp txt)
     NumArgs l n args       ->
       withLocation l ("Error Number of Arguments, expected:" <+> integer n <+> "recieved:" <+> integer n)

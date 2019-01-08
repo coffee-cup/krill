@@ -1,4 +1,4 @@
-module Prim where
+module Prim (primEnv) where
 
 import           Control.Monad.Except
 import qualified Data.Text.Lazy       as T
