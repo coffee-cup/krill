@@ -46,24 +46,24 @@ evalLit (LitBool x)   = return $ Bool x
 evalLit (LitAtom x)   = return $ Atom x
 
 evalExpr :: Expr -> Eval Value
-evalExpr (ELit l) = evalLit l
-evalExpr (EApp e1 e2) = do
+evalExpr (ELit _ l) = evalLit l
+evalExpr (EApp _ e1 e2) = do
   funVar <- evalExpr e1
   arg <- evalExpr e2
   runFunction funVar [arg]
-evalExpr (EBinOp n e1 e2) = do
+evalExpr (EBinOp _ n e1 e2) = do
   v1 <- evalExpr e1
   v2 <- evalExpr e2
   funVar <- getOperator n
   runFunction funVar [v1, v2]
-evalExpr (EUnOp n e) = do
+evalExpr (EUnOp _ n e) = do
   v <- evalExpr e
   funVar <- getOperator n
   runFunction funVar [v]
-evalExpr (EParens e) = evalExpr e
+evalExpr (EParens _ e) = evalExpr e
 
 evalExpr _ = throwError $ Default "eval expr fall through"
 
 evalStmt :: Stmt -> Eval Value
-evalStmt (SExpr e) = evalExpr e
-evalStmt _         = throwError $ Default "eval stmt fall through"
+evalStmt (SExpr _ e) = evalExpr e
+evalStmt _           = throwError $ Default "eval stmt fall through"

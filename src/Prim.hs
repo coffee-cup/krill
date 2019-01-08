@@ -48,7 +48,7 @@ numOp _ x _                    = throwError $ TypeMismatch "numeric op" x
 
 numCmp :: (Double -> Double -> Bool) -> Value -> Value -> Eval Value
 numCmp op (Number x) (Number y) = return . Bool $ op x y
-numCmp _ x          (Number y)  = throwError $ TypeMismatch "numeric op" x
+numCmp _ x          (Number _)  = throwError $ TypeMismatch "numeric op" x
 numCmp _ (Number _)  y          = throwError $ TypeMismatch "numeric op" y
 numCmp _ x _                    = throwError $ TypeMismatch "numeric op" x
 

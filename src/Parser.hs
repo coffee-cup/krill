@@ -14,6 +14,9 @@ import           Syntax
 pName :: Parser Name
 pName = pText identifier
 
+getLoc :: Parser Loc
+getLoc = Located <$> getSourcePos
+
 -- Literal Parsers
 
 pNumberLit :: Parser Literal
@@ -62,22 +65,22 @@ pLiteral = pNumberLit
 -- Expressions
 
 pExprLiteral :: Parser Expr
-pExprLiteral = ELit <$> pLiteral <?> "literal"
+pExprLiteral = ELit <$> getLoc <*> pLiteral <?> "literal"
 
 pExprVar :: Parser Expr
-pExprVar = EVar <$> pName
+pExprVar = EVar <$> getLoc <*> pName
 
-mkPrefix :: T.Text -> Expr -> Expr
-mkPrefix name = EUnOp name
+mkPrefix :: Loc -> T.Text -> Expr -> Expr
+mkPrefix loc name = EUnOp loc name
 
-mkBinary :: T.Text -> Expr -> Expr -> Expr
-mkBinary name = EBinOp name
+mkBinary :: Loc -> T.Text -> Expr -> Expr -> Expr
+mkBinary loc name = EBinOp loc name
 
 prefix :: T.Text -> Operator Parser Expr
-prefix name = Prefix (mkPrefix <$> symbol name)
+prefix name = Prefix (mkPrefix <$> getLoc <*> symbol name <?> "unary operator")
 
 binary :: T.Text -> Operator Parser Expr
-binary name = InfixL (mkBinary <$> symbol name)
+binary name = InfixL (mkBinary <$> getLoc <*> symbol name <?> "binary operator")
 
 operators :: [[Operator Parser Expr]]
 operators =
@@ -96,7 +99,7 @@ operators =
   , [ binary "||" ] ]
 
 pExprParens :: Parser Expr
-pExprParens = EParens <$> parens pExpr <?> "parens"
+pExprParens = EParens <$> getLoc <*> parens pExpr <?> "parens"
 
 aexpr :: Parser Expr
 aexpr = do
@@ -104,7 +107,8 @@ aexpr = do
                      , pExprLiteral
                      , pExprVar
                      ]
-  return $ Prelude.foldl1 EApp r
+  loc <- getLoc
+  return $ Prelude.foldl1 (EApp loc) r
 
 pExpr :: Parser Expr
 pExpr = makeExprParser aexpr operators
@@ -112,18 +116,16 @@ pExpr = makeExprParser aexpr operators
 -- Statements
 
 pStmtExpr :: Parser Stmt
-pStmtExpr = do
-  e <- pExpr
-  try scn
-  return $ SExpr e
+pStmtExpr = (SExpr <$> getLoc <*> pExpr) <* try scn
 
 pStmtAss :: Parser Stmt
 pStmtAss = do
+  loc <- getLoc
   n <- pName
   equals
   e <- pExpr
   try scn
-  return $ SAss n e
+  return $ SAss loc n e
 
 pStmt :: Parser Stmt
 pStmt = try pStmtAss
@@ -143,10 +145,11 @@ pBlock = pMultiLine <|> pSingleLine
 
 pFuncDecl :: Parser Decl
 pFuncDecl = do
+  loc <- getLoc
   n <- pName
   args <- many pName
   arrow
-  Func n args <$> pBlock
+  Func loc n args <$> pBlock
 
 pDecl :: Parser Decl
 pDecl = pFuncDecl
@@ -157,10 +160,7 @@ pModule :: Parser Module
 pModule = Module <$> many pDecl
 
 contents :: Parser a -> Parser a
-contents p = do
-  r <- lexeme p
-  eof
-  return r
+contents p = lexeme p <* eof
 
 parseUnpack :: Either (ParseErrorBundle T.Text Void) a -> Either String a
 parseUnpack res = case res of

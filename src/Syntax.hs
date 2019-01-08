@@ -2,20 +2,24 @@
 
 module Syntax where
 
-import qualified Data.Text.Lazy as T
+import qualified Data.Text.Lazy  as T
+import           Text.Megaparsec (SourcePos)
 
 type Name = T.Text
+
+data Loc = NoLoc | Located SourcePos
+  deriving (Eq, Ord, Show)
 
 -- Expressions
 
 data Expr
- = EApp Expr Expr        -- a b
- | EBinOp Name Expr Expr -- a + b
- | EUnOp Name Expr       -- !a
- | EVar Name             -- a
- | ELam [Name] Block     -- x -> x + 1
- | ELit Literal          -- 3
- | EParens Expr          -- (a)
+ = EApp Loc Expr Expr    -- a b
+ | EBinOp Loc Name Expr Expr -- a + b
+ | EUnOp Loc Name Expr       -- !a
+ | EVar Loc Name             -- a
+ | ELam Loc [Name] Block     -- x -> x + 1
+ | ELit Loc Literal          -- 3
+ | EParens Loc Expr          -- (a)
  deriving (Eq, Ord, Show)
 
 -- Literals
@@ -31,9 +35,9 @@ data Literal
 -- Statements
 
 data Stmt
-  = SExpr Expr           -- a
-  | SAss Name Expr       -- a = b
-  | SIf Expr Block Block -- if cond then expr else expr
+  = SExpr Loc Expr           -- a
+  | SAss Loc Name Expr       -- a = b
+  | SIf Loc Expr Block Block -- if cond then expr else expr
   deriving (Eq, Ord, Show)
 
 newtype Block = Block [Stmt]
@@ -42,7 +46,7 @@ newtype Block = Block [Stmt]
 -- Declarations
 
 data Decl
-  = Func Name [Name] Block
+  = Func Loc Name [Name] Block
   deriving (Eq, Ord, Show)
 
 -- Module
@@ -54,14 +58,14 @@ data Module
 -- Helpers
 
 mkEApp :: [Expr] -> Expr
-mkEApp = foldl1 EApp
+mkEApp = foldl1 (EApp NoLoc)
 
 viewVars :: Expr -> [Name]
-viewVars (ELam ns _) = ns
-viewVars _           = []
+viewVars (ELam _ ns _) = ns
+viewVars _             = []
 
 viewApp :: Expr -> (Expr, [Expr])
 viewApp = go []
   where
-    go !xs (EApp a b) = go (b : xs) a
-    go xs f           = (f, xs)
+    go !xs (EApp _ a b) = go (b : xs) a
+    go xs f             = (f, xs)
