@@ -79,24 +79,32 @@ mkBinary loc name = EBinOp loc name
 prefix :: T.Text -> Operator Parser Expr
 prefix name = Prefix (mkPrefix <$> getLoc <*> symbol name <?> "unary operator")
 
-binary :: T.Text -> Operator Parser Expr
-binary name = InfixL (mkBinary <$> getLoc <*> symbol name <?> "binary operator")
+binary :: T.Text -> Parser (Expr -> Expr -> Expr)
+binary name = mkBinary <$> getLoc <*> symbol name <?> "binary operator"
+
+bn, bl, br :: T.Text -> Operator Parser Expr
+br = InfixR . binary
+bl = InfixL.  binary
+bn = InfixN . binary
+
+binaryr :: T.Text -> Operator Parser Expr
+binaryr name = InfixR (mkBinary <$> getLoc <*> symbol name <?> "binary operator")
 
 operators :: [[Operator Parser Expr]]
 operators =
   [ [ prefix "-"
     , prefix "!" ]
-  , [ binary "*"
-    , binary "/" ]
-  , [ binary "+"
-    , binary "-" ]
-  , [ binary "=="
-    , binary "<="
-    , binary ">="
-    , binary "<"
-    , binary ">" ]
-  , [ binary "&&" ]
-  , [ binary "||" ] ]
+  , [ bl "*"
+    , bl "/" ]
+  , [ bl "+"
+    , bl "-" ]
+  , [ bn "=="
+    , bn "<="
+    , bn ">="
+    , bn "<"
+    , bn ">" ]
+  , [ br "&&" ]
+  , [ br "||" ] ]
 
 pExprParens :: Parser Expr
 pExprParens = EParens <$> getLoc <*> parens pExpr <?> "parens"
