@@ -8,6 +8,7 @@ module Pretty where
 import           Data.List        (intersperse)
 import qualified Data.Text.Lazy   as T
 import           Prelude          hiding ((<>))
+import           Text.Megaparsec  (sourcePosPretty)
 import           Text.PrettyPrint
 
 import           CompilerError
@@ -73,6 +74,11 @@ banner = render $
   where
     ascii = " |  ._ o | |\n |< |  | | | "
 
+withLocation :: Loc -> Doc -> Doc
+withLocation NoLoc d = d
+withLocation (Located pos) d =
+  text (sourcePosPretty pos) <+> d
+
 -- Compiler
 
 instance Pretty CompilerError where
@@ -84,13 +90,14 @@ instance Pretty CompilerError where
 
 instance Pretty EvalError where
   ppr _ e = case e of
-    TypeMismatch txt val -> "Error Type Mismatch: cannot perform" <+> pp txt <+> "with" <+> pp val
-    UnboundVar txt       -> "Error Unbound Variable:" <+> pp txt
-    NumArgs n args ->
-      "Error Number of Arguments, expected:" <+> integer n <+> "recieved:" <+> integer n
-    NotFunction val -> "Error Not a Function:" <+> pp val
-    OperatorNotFound n -> "Error Operator `" <> pp n <> "` Not Found"
-    Default val          -> "Error Evaluation:" <+> pp val
+    TypeMismatch l txt val -> withLocation l ("Type Mismatch.\n\tExpected:"
+                                              <+> pp txt <+> "\n\tReceived:" <+> pp val)
+    UnboundVar l txt       -> withLocation l ("Error Unbound Variable:" <+> pp txt)
+    NumArgs l n args       ->
+      withLocation l ("Error Number of Arguments, expected:" <+> integer n <+> "recieved:" <+> integer n)
+    NotFunction l val      -> withLocation l ("Error Not a Function:" <+> pp val)
+    OperatorNotFound l n   -> withLocation l ("Error Operator `" <> pp n <> "` Not Found")
+    Default l val          -> withLocation l ("Error Evaluation:" <+> pp val)
 
 -- Syntax
 
@@ -115,15 +122,15 @@ block d b             = (hang (d <+> lbrace) 2 (pp b)) <> "\n}"
 
 instance Pretty Expr where
   ppr p ex = case ex of
-    ELit l          -> ppr p l
+    ELit _ l          -> ppr p l
     e@(EApp {})     -> ppapp p e
-    EBinOp op e1 e2 -> ppr p e1 <+> pp op <+> ppr p e2
-    EUnOp op e      -> pp op <> ppr p e
-    EVar n -> pp n
-    e@(ELam _ b) ->
+    EBinOp _ op e1 e2 -> ppr p e1 <+> pp op <+> ppr p e2
+    EUnOp _ op e      -> pp op <> ppr p e
+    EVar _ n -> pp n
+    e@(ELam _ _ b) ->
       parensIf (p>0) $ hsep vars <+> "->" <> pp b
       where vars = fmap pp (viewVars e)
-    EParens e -> parens (pp e)
+    EParens _ e -> parens (pp e)
 
 instance Pretty Block where
   ppr _ (Block stmts) = case stmts of
@@ -134,12 +141,12 @@ instance Pretty Block where
 
 instance Pretty Stmt where
   ppr p s = case s of
-    SExpr e  -> ppr p e
-    SAss n e -> pp n <+> equals <+> ppr p e
+    SExpr _ e  -> ppr p e
+    SAss _ n e -> pp n <+> equals <+> ppr p e
 
 instance Pretty Decl where
   ppr _ d = case d of
-    Func n args b ->
+    Func _ n args b ->
       block (pp n <+> hsep (fmap pp args) <+> "->") b
 
 instance Pretty Module where

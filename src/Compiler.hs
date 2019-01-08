@@ -37,7 +37,7 @@ compileLine = do
 
 parseText :: T.Text -> CompilerM Stmt
 parseText input = do
-  let ast = parseStmt input
+  let ast = parseStmt "<repl>" input
   ifSet dumpAst (dumpValues "Ast" ast)
   case ast of
     Right ast' -> return ast'
