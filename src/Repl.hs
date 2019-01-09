@@ -151,4 +151,4 @@ ini = liftIO $ T.putStrLn $ T.pack banner
 
 repl :: CompilerState -> IO ()
 repl cs = flip evalStateT (initState cs)
-  $ evalRepl (pure "krill> ") cmd options (Just '!') completer ini
+  $ evalRepl (pure "krill> ") cmd options (Just '.') completer ini
