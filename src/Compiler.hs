@@ -29,9 +29,12 @@ compileLine :: CompilerM ()
 compileLine = do
   Just text <- gets _src
   stmt <- parseText text
-  val <- inIO $ runEval (evalStmt stmt) basicEnv
+  es <- gets _evalS
+  (val, es') <- inIO $ runEval (evalStmt stmt) es
   case val of
-    Right val' -> inIO $ T.putStrLn $ ppg val'
+    Right val' -> do
+      modify (\st -> st { _evalS = es' })
+      inIO $ T.putStrLn $ ppg val'
     Left e     -> throwError $ EvaluationError e
   return ()
 

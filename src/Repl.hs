@@ -16,6 +16,7 @@ import           Compiler
 import           Flags
 import           Monad
 import           Pretty
+import           Value
 
 -- Types
 
@@ -50,8 +51,7 @@ exec compM = do
 execLine :: T.Text -> Repl ()
 execLine source = do
   cs <- gets _compilerState
-  let cs' = cs { _src = Just source }
-  updateCompilerState cs'
+  updateCompilerState (cs { _src = Just source })
   exec compileLine
 
 execFile :: FilePath -> Repl ()
@@ -91,14 +91,19 @@ unset :: [String] -> Repl ()
 unset flags = changeFlag flags "unset" False
 
 load :: [String] -> Repl ()
-load []         = showError $ "load requires a filename"
+load []         = showError "load requires a filename"
 load (fname:[]) = execFile fname
-load _          = showError $ "load requires a single filename"
+load _          = showError "load requires a single filename"
 
 flags :: a -> Repl ()
 flags _ = do
   cs <- gets _compilerState
   showMsg $ show $ _flags cs
+
+env :: a -> Repl ()
+env _ = do
+  env <- (_env . _evalS) <$> gets _compilerState
+  showMsg $ T.unpack $ ppg env
 
 help :: a -> Repl ()
 help _ = showMsg "Commands available \n\
@@ -122,12 +127,13 @@ defaultMatcher =
 comp :: (Monad m, MonadState IState m) => WordCompleter m
 comp n = do
   let cmds =
-        [ "!load"
-        , "!set"
-        , "!unset"
-        , "!flags"
-        , "!quit"
-        , "!help"
+        [ ".load"
+        , ".set"
+        , ".unset"
+        , ".flags"
+        , ".quit"
+        , ".help"
+        , ".env"
         ]
   return $ filter (isPrefixOf n) cmds
 
@@ -142,6 +148,7 @@ options =
   , ("load", load)
   , ("help", help)
   , ("quit", quit)
+  , ("env", env)
   ]
 
 -- Entry Point

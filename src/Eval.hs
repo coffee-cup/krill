@@ -8,7 +8,7 @@ module Eval where
 import           Control.Monad
 import           Control.Monad.Except
 import           Control.Monad.Fail
-import           Control.Monad.Reader
+import           Control.Monad.State
 import qualified Data.Map             as Map
 import           Data.Monoid
 import           Data.Text.Lazy       as T
@@ -58,11 +58,26 @@ evalExpr (EBinOp l n e1 e2) =
   case Map.lookup n binOperators of
     Nothing -> throwError $ OperatorNotFound l n
     Just fn -> fn e1 e2
+evalExpr (EVar l n) = do
+  env <- gets _env
+  case getValue n env of
+    Nothing  -> throwError $ UnboundVar l n
+    Just val -> return val
 evalExpr (EParens _ e) = evalExpr e
 evalExpr e = throwError $ Default (loc e) "eval expr fall through"
 
 evalStmt :: Stmt -> Eval Value
 evalStmt (SExpr _ e) = evalExpr e
+evalStmt (SAss l n e) = do
+  env <- gets _env
+  let isBound = inInnerScope n env
+  if isBound
+  then throwError $ VariableAlreadyBound l n
+  else do
+    val <- evalExpr e
+    modify (\st -> st { _env = setValue n val env })
+    return Nil
+
 evalStmt ex          = throwError $ Default (loc ex) "eval stmt fall through"
 
 numBinOp :: (Double -> Double -> Double) -> Expr -> Expr -> Eval Value

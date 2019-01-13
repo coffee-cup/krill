@@ -165,7 +165,7 @@ pDecl = pFuncDecl
 -- Module
 
 pModule :: Parser Module
-pModule = Module <$> many pDecl
+pModule = Module <$> many pStmt
 
 contents :: Parser a -> Parser a
 contents p = lexeme p <* eof

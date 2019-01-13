@@ -13,7 +13,7 @@ import           Syntax
 type Env = [Map.Map T.Text Value]
 
 data EvalState = EvalState
-  { env :: Env
+  { _env :: Env
   } deriving (Eq)
 
 type EvalMonad =
@@ -53,6 +53,7 @@ data EvalError
   | NumArgs Loc Integer Integer
   | NotFunction Loc Value
   | OperatorNotFound Loc Name
+  | VariableAlreadyBound Loc T.Text
   | Default Loc T.Text
   deriving (Eq)
 
@@ -65,8 +66,8 @@ instance Location EvalError where
     OperatorNotFound l _ -> l
     Default l _          -> l
 
-emptyState :: EvalState
-emptyState = EvalState []
+basicState :: EvalState
+basicState = EvalState [Map.empty]
 
 enterScope :: Env -> Env
 enterScope xs = Map.empty : xs
@@ -76,19 +77,19 @@ endScope (_:xs) = xs
 endScope []     = []
 
 inInnerScope :: T.Text -> Env -> Bool
-inInnerScope t (x:_) = Map.member t x
+inInnerScope n (x:_) = Map.member n x
 inInnerScope _ []    = False
 
 getValue :: T.Text -> Env -> Maybe Value
-getValue t (x:xs) =
-  case Map.lookup t x of
+getValue n (x:xs) =
+  case Map.lookup n x of
     Just r  -> Just r
-    Nothing -> getValue t xs
+    Nothing -> getValue n xs
 getValue _ [] = Nothing
 
 setValue :: T.Text -> Value -> Env -> Env
-setValue t v (x:xs) = Map.insert t v x : xs
-setValue _ _ []     = fail "inserting into empty scope"
+setValue n v (x:xs) = Map.insert n v x : xs
+setValue _ _ []     = error "inserting into empty scope"
 
 runEval :: Eval a -> EvalState -> IO (Either EvalError a, EvalState)
 runEval = runStateT . runExceptT . unEval

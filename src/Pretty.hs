@@ -6,6 +6,7 @@
 module Pretty where
 
 import           Data.List        (intersperse)
+import qualified Data.Map         as Map
 import qualified Data.Text.Lazy   as T
 import           Prelude          hiding ((<>))
 import           Text.Megaparsec  (sourcePosPretty)
@@ -165,3 +166,10 @@ instance Pretty Value where
     Fun _      -> text "(function)"
     Lambda _ _ -> text "(lambda)"
     Nil        -> text "nil"
+
+
+instance Pretty Env where
+  ppr _ env = vcat (fmap ppscope env)
+    where
+      ppscope :: Map.Map T.Text Value -> Doc
+      ppscope s = vcat $ fmap (\(k, v) -> pp k <+> "->" <+> pp v) (Map.toList s)

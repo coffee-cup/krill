@@ -53,7 +53,7 @@ data Decl
 -- Module
 
 data Module
-  = Module [Decl]
+  = Module [Stmt]
   deriving (Eq, Ord, Show)
 
 -- Helpers

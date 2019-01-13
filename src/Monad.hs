@@ -11,6 +11,7 @@ import qualified Data.Text.Lazy       as L
 import           CompilerError
 import qualified Flags
 import           Syntax
+import           Value
 
 -- Compiler Monad
 
@@ -36,7 +37,8 @@ data CompilerState = CompilerState
   , _src   :: Maybe L.Text
   , _ast   :: Maybe Module
   , _flags :: Flags.Flags
-  } deriving (Show)
+  , _evalS :: EvalState
+  } deriving (Eq)
 
 emptyCS :: CompilerState
 emptyCS = CompilerState
@@ -44,6 +46,7 @@ emptyCS = CompilerState
   , _src   = Nothing
   , _ast   = Nothing
   , _flags = Flags.emptyFlags
+  , _evalS = basicState
   }
 
 -- Run the compiler pipeline
