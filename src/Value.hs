@@ -3,17 +3,21 @@
 module Value where
 
 import           Control.Monad.Except
-import           Control.Monad.Fail
-import           Control.Monad.Reader
+import           Control.Monad.Fail   hiding (fail)
+import           Control.Monad.State
 import qualified Data.Map             as Map
 import qualified Data.Text.Lazy       as T
 
 import           Syntax
 
-type EnvCtx = Map.Map T.Text Value
+type Env = [Map.Map T.Text Value]
+
+data EvalState = EvalState
+  { env :: Env
+  } deriving (Eq)
 
 type EvalMonad =
-  ExceptT EvalError (ReaderT EnvCtx IO)
+  ExceptT EvalError (StateT EvalState IO)
 
 newtype Eval a = Eval { unEval :: EvalMonad a }
   deriving
@@ -23,7 +27,7 @@ newtype Eval a = Eval { unEval :: EvalMonad a }
     , MonadFix
     , MonadIO
     , MonadFail
-    , MonadReader EnvCtx
+    , MonadState EvalState
     , MonadError EvalError
     )
 
@@ -34,7 +38,7 @@ data Value
   | Char Char
   | Bool Bool
   | Fun IFunc
-  | Lambda IFunc EnvCtx
+  | Lambda IFunc EvalState
   | Nil
   deriving (Eq)
 
@@ -61,5 +65,30 @@ instance Location EvalError where
     OperatorNotFound l _ -> l
     Default l _          -> l
 
-runEval :: Eval a -> EnvCtx -> IO (Either EvalError a)
-runEval = runReaderT . runExceptT . unEval
+emptyState :: EvalState
+emptyState = EvalState []
+
+enterScope :: Env -> Env
+enterScope xs = Map.empty : xs
+
+endScope :: Env -> Env
+endScope (_:xs) = xs
+endScope []     = []
+
+inInnerScope :: T.Text -> Env -> Bool
+inInnerScope t (x:_) = Map.member t x
+inInnerScope _ []    = False
+
+getValue :: T.Text -> Env -> Maybe Value
+getValue t (x:xs) =
+  case Map.lookup t x of
+    Just r  -> Just r
+    Nothing -> getValue t xs
+getValue _ [] = Nothing
+
+setValue :: T.Text -> Value -> Env -> Env
+setValue t v (x:xs) = Map.insert t v x : xs
+setValue _ _ []     = fail "inserting into empty scope"
+
+runEval :: Eval a -> EvalState -> IO (Either EvalError a, EvalState)
+runEval = runStateT . runExceptT . unEval

@@ -20,9 +20,6 @@ import           Value
 type Binary = Expr -> Expr -> Eval Value
 type Unary = Expr -> Eval Value
 
-basicEnv :: EnvCtx
-basicEnv = Map.fromList []
-
 binOperators :: Map.Map T.Text Binary
 binOperators = Map.fromList
   [ ("+", numBinOp (+))
@@ -44,16 +41,6 @@ unOperators = Map.fromList
   , ("!", eqUnCmp not)
   ]
 
-runFunction :: Loc -> Value -> [Value] -> Eval Value
-runFunction l funVar args = do
-  env <- ask
-  case funVar of
-    (Fun (IFunc fn))             -> fn args
-    (Lambda (IFunc fn) boundenv) -> do
-      let f = fn args
-      local (const (boundenv <> env)) f
-    _ -> throwError $ NotFunction l funVar
-
 evalLit :: Literal -> Eval Value
 evalLit (LitNumber x) = return $ Number x
 evalLit (LitString x) = return $ String x
@@ -63,10 +50,6 @@ evalLit (LitAtom x)   = return $ Atom x
 
 evalExpr :: Expr -> Eval Value
 evalExpr (ELit _ l) = evalLit l
-evalExpr (EApp _ e1 e2) = do
-  funVar <- evalExpr e1
-  arg <- evalExpr e2
-  runFunction (loc e1) funVar [arg]
 evalExpr (EUnOp l n e1) =
   case Map.lookup n unOperators of
     Nothing -> throwError $ OperatorNotFound l n
@@ -76,7 +59,6 @@ evalExpr (EBinOp l n e1 e2) =
     Nothing -> throwError $ OperatorNotFound l n
     Just fn -> fn e1 e2
 evalExpr (EParens _ e) = evalExpr e
-
 evalExpr e = throwError $ Default (loc e) "eval expr fall through"
 
 evalStmt :: Stmt -> Eval Value
