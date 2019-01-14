@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts     #-}
 {-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE OverloadedStrings    #-}
 {-# LANGUAGE RecordWildCards      #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 
@@ -119,7 +120,7 @@ ppapp p e = parensIf (p>0) $ ppr p f <+> args
 
 block :: Doc -> Block -> Doc
 block d b@(Block [s]) = d <+> pp b
-block d b             = (hang (d <+> lbrace) 2 (pp b)) <> "\n}"
+block d b             = hang (d <+> lbrace) 2 (pp b) <> "\n}"
 
 instance Pretty Expr where
   ppr p ex = case ex of
@@ -128,9 +129,8 @@ instance Pretty Expr where
     EBinOp _ op e1 e2 -> ppr p e1 <+> pp op <+> ppr p e2
     EUnOp _ op e      -> pp op <> ppr p e
     EVar _ n -> pp n
-    e@(ELam _ _ b) ->
-      parensIf (p>0) $ hsep vars <+> "->" <> pp b
-      where vars = fmap pp (viewVars e)
+    e@(ELam _ args b) ->
+      parensIf (p>0) $ block (hsep (fmap pp args) <+> "->") b
     EParens _ e -> parens (pp e)
 
 instance Pretty Block where

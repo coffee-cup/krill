@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Lexer where
 
 import           Control.Applicative        hiding (many, some)

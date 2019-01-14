@@ -32,14 +32,14 @@ pCharLit = do
   quote
   c <- anySingle
   quote
-  (return $ LitChar c) <?> "char"
+  return (LitChar c) <?> "char"
 
 pStringLit :: Parser Literal
 pStringLit = do
   dquote
   x <- many $ escapedChars <|> noneOf ("\"\\" :: String)
   dquote
-  (return $ LitString $ T.pack x) <?> "string"
+  return (LitString $ T.pack x) <?> "string"
 
 pBoolLit :: Parser Literal
 pBoolLit = p <?> "boolean"
@@ -52,8 +52,7 @@ pAtomLit = p <?> "atom"
   where
     p = do
       colon
-      x <- pName
-      return $ LitAtom x
+      LitAtom <$> pName
 
 pLiteral :: Parser Literal
 pLiteral = pNumberLit
@@ -84,7 +83,7 @@ binary name = mkBinary <$> getLoc <*> symbol name <?> "binary operator"
 
 bn, bl, br :: T.Text -> Operator Parser Expr
 br = InfixR . binary
-bl = InfixL .  binary
+bl = InfixL . binary
 bn = InfixN . binary
 
 binaryr :: T.Text -> Operator Parser Expr
@@ -106,6 +105,13 @@ operators =
   , [ br "&&" ]
   , [ br "||" ] ]
 
+pExprLam :: Parser Expr
+pExprLam = do
+  l <- getLoc
+  args <- many pName
+  arrow
+  ELam l args <$> pBlock
+
 pExprParens :: Parser Expr
 pExprParens = EParens <$> getLoc <*> parens pExpr <?> "parens"
 
@@ -115,11 +121,12 @@ aexpr = do
                      , pExprLiteral
                      , pExprVar
                      ]
-  loc <- getLoc
-  return $ Prelude.foldl1 (EApp loc) r
+  l <- getLoc
+  return $ Prelude.foldl1 (EApp l) r
 
 pExpr :: Parser Expr
-pExpr = makeExprParser aexpr operators
+pExpr = try pExprLam
+  <|> makeExprParser aexpr operators
 
 -- Statements
 
@@ -128,12 +135,12 @@ pStmtExpr = (SExpr <$> getLoc <*> pExpr) <* try scn
 
 pStmtAss :: Parser Stmt
 pStmtAss = do
-  loc <- getLoc
+  l <- getLoc
   n <- pName
   equals
   e <- pExpr
   try scn
-  return $ SAss loc n e
+  return $ SAss l n e
 
 pStmt :: Parser Stmt
 pStmt = try pStmtAss
