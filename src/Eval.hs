@@ -10,6 +10,7 @@ import           Control.Monad
 import           Control.Monad.Except
 import           Control.Monad.Fail
 import           Control.Monad.State
+import           Data.List            as L
 import qualified Data.Map             as Map
 import           Data.Monoid
 import           Data.Text.Lazy       as T
@@ -49,6 +50,21 @@ evalLit (LitChar x)   = return $ Char x
 evalLit (LitBool x)   = return $ Bool x
 evalLit (LitAtom x)   = return $ Atom x
 
+evalBlock :: Block -> Eval Value
+evalBlock (Block []) = return Nil
+evalBlock (Block stmts) = do
+  vals <- mapM evalStmt stmts
+  return $ L.last vals
+
+evalLam :: Block -> [Name] -> [Value] -> Eval Value
+evalLam b params args = do
+  env <- gets _env
+  let innerEnv = Map.fromList $ L.zip params args
+  modify (\st -> st { _env =  innerEnv : env })
+  val <- evalBlock b
+  modify (\st -> st { _env = endScope env })
+  return val
+
 evalExpr :: Expr -> Eval Value
 evalExpr (ELit _ l) = evalLit l
 evalExpr (EUnOp l n e1) =
@@ -65,6 +81,20 @@ evalExpr (EVar l n) = do
     Nothing  -> throwError $ UnboundVar l n
     Just val -> return val
 evalExpr (EParens _ e) = evalExpr e
+evalExpr (ELam _ params b) = do
+  env <- gets _env
+  return $ Lambda (IFunc $ evalLam b params) env
+evalExpr (EApp l e1 e2) = do
+  fun <- evalExpr e1
+  arg <- evalExpr e2
+  oldEnv <- gets _env
+  case fun of
+    Lambda (IFunc fn) env -> do
+       modify (\st -> st { _env = env })
+       val <- fn [arg]
+       modify (\st -> st { _env = oldEnv })
+       return val
+    _ -> throwError $ NotFunction l arg
 evalExpr e = throwError $ Default (loc e) "eval expr fall through"
 
 evalStmt :: Stmt -> Eval Value

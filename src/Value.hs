@@ -10,7 +10,7 @@ import qualified Data.Text.Lazy       as T
 
 import           Syntax
 
-type Env = [Map.Map T.Text Value]
+type Env = [Map.Map Name Value]
 
 data EvalState = EvalState
   { _env :: Env
@@ -41,7 +41,7 @@ data Value
   | Nil
   deriving (Eq)
 
-data IFunc = IFunc { fn :: [Value] -> Eval Value }
+newtype IFunc = IFunc ([Value] -> Eval Value)
 
 instance Eq IFunc where
   (==) _ _ = False
