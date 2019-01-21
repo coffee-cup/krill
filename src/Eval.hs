@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE TypeSynonymInstances       #-}
 
 module Eval where
@@ -24,7 +25,7 @@ binOperators :: Map.Map T.Text Binary
 binOperators = Map.fromList
   [ ("+", numBinOp (+))
   , ("*", numBinOp (*))
-  , ("/",  numBinOp (/))
+  , ("/", numBinOp (/))
   , ("-", numBinOp (-))
   , ("<", numBinCmp (<))
   , (">", numBinCmp (>))

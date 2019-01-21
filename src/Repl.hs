@@ -1,4 +1,5 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts  #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Repl
   ( repl
@@ -107,10 +108,10 @@ env _ = do
 
 help :: a -> Repl ()
 help _ = showMsg "Commands available \n\
-\  :set FLAG\tsets a compiler flag \n\
-\  :unset FLAG\tunsets a compiler flag \n\
-\  :flags\tprint all set compiler flags \n\
-\  :quit\tquit the repl"
+\  .set FLAG \t sets a compiler flag \n\
+\  .unset FLAG \t unsets a compiler flag \n\
+\  .flags \t print all set compiler flags \n\
+\  .quit \t quit the repl"
 
 quit :: a -> Repl ()
 quit _ = liftIO exitSuccess

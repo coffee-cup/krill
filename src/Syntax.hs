@@ -13,7 +13,7 @@ data Loc = NoLoc | Located SourcePos
 -- Expressions
 
 data Expr
- = EApp Loc Expr Expr    -- a b
+ = EApp Loc Expr Expr        -- a b
  | EBinOp Loc Name Expr Expr -- a + b
  | EUnOp Loc Name Expr       -- !a
  | EVar Loc Name             -- a

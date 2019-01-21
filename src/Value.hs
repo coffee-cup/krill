@@ -37,8 +37,7 @@ data Value
   | String T.Text
   | Char Char
   | Bool Bool
-  | Fun IFunc
-  | Lambda IFunc EvalState
+  | Lambda IFunc Env
   | Nil
   deriving (Eq)
 

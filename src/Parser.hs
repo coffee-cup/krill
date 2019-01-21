@@ -197,3 +197,4 @@ parseSimpleString p = parseSimple p . T.pack
 runKrillParser :: T.Text -> Parser a -> T.Text -> Either String a
 runKrillParser input p =
   parseUnpack . runParser (contents p) (T.unpack input) . T.strip
+
