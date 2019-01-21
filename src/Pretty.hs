@@ -99,6 +99,7 @@ instance Pretty EvalError where
       withLocation l ("Error Number of Arguments, expected:" <+> integer n <+> "recieved:" <+> integer n)
     NotFunction l val      -> withLocation l ("Error Not a Function:" <+> pp val)
     OperatorNotFound l n   -> withLocation l ("Error Operator `" <> pp n <> "` Not Found")
+    VariableAlreadyBound l n -> withLocation l ("Error Variable `" <> pp n <> "` Already Bound")
     Default l val          -> withLocation l ("Error Evaluation:" <+> pp val)
 
 -- Syntax
@@ -163,7 +164,6 @@ instance Pretty Value where
     String x   -> doubleQuotes $ pp x
     Bool True  -> text "true"
     Bool False -> text "false"
-    Fun _      -> text "(function)"
     Lambda _ _ -> text "(lambda)"
     Nil        -> text "nil"
 
