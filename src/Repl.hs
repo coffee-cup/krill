@@ -111,6 +111,7 @@ help _ = showMsg "Commands available \n\
 \  .set FLAG \t sets a compiler flag \n\
 \  .unset FLAG \t unsets a compiler flag \n\
 \  .flags \t print all set compiler flags \n\
+\  .load \t load source file into repl \n\
 \  .quit \t quit the repl"
 
 quit :: a -> Repl ()
@@ -121,7 +122,7 @@ quit _ = liftIO exitSuccess
 -- Prefix tab completer
 defaultMatcher :: MonadIO m => [(String, CompletionFunc m)]
 defaultMatcher =
-  [ (":load", fileCompleter)
+  [ (".load", fileCompleter)
   ]
 
 -- Default tab completer

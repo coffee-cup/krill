@@ -67,7 +67,8 @@ buildLamFunc b (x:xs) = do
     curriedFunc :: Value -> Eval Value
     curriedFunc val = do
       env' <- gets _env
-      useEnv (setValue x val env')
+      let newScope = enterScope env'
+      useEnv (setValue x val newScope)
       buildLamFunc b xs
 
 -- evalLam :: Block -> [Name] -> [Value] -> Eval Value
@@ -121,7 +122,10 @@ evalStmt (SAss l n e) = do
     modify (\st -> st { _env = setValue n val env })
     return Nil
 
-evalStmt ex          = throwError $ Default (loc ex) "eval stmt fall through"
+evalStmt ex = throwError $ Default (loc ex) "eval stmt fall through"
+
+evalModule :: Module -> Eval ()
+evalModule (Module stmts) = mapM_ evalStmt stmts
 
 numBinOp :: (Double -> Double -> Double) -> Expr -> Expr -> Eval Value
 numBinOp op e1 e2 = do

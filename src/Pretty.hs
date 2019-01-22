@@ -172,4 +172,6 @@ instance Pretty Env where
   ppr _ env = vcat (fmap ppscope env)
     where
       ppscope :: Map.Map T.Text Value -> Doc
-      ppscope s = vcat $ fmap (\(k, v) -> pp k <+> "->" <+> pp v) (Map.toList s)
+      ppscope s =
+        (vcat $ fmap (\(k, v) -> pp k <+> "->" <+> pp v) (Map.toList s)) <> "\n~\n"
+

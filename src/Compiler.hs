@@ -15,15 +15,15 @@ import           Pretty
 import           Syntax
 import           Value
 
-compileFile :: CompilerM Module
+compileFile :: CompilerM ()
 compileFile = do
-  Just fname <- gets _fname
-  Just src <- gets _src
-  case parseModule (T.pack fname) src of
-    Right mod -> do
-      ifSet dumpAst (dumpValues "Ast" mod)
-      return mod
-    Left s -> throwError $ ParseError s
+  mod <- Compiler.parseModule
+  es <- gets _evalS
+  (val, es') <- inIO $ runEval (evalModule mod) es
+  case val of
+    Right val' -> do
+      modify (\st -> st { _evalS = es' })
+    Left e     -> throwError $ EvaluationError e
 
 compileLine :: CompilerM ()
 compileLine = do
@@ -36,7 +36,16 @@ compileLine = do
       modify (\st -> st { _evalS = es' })
       inIO $ T.putStrLn $ ppg val'
     Left e     -> throwError $ EvaluationError e
-  return ()
+
+parseModule :: CompilerM Module
+parseModule  = do
+  Just fname <- gets _fname
+  Just src <- gets _src
+  case Parser.parseModule (T.pack fname) src of
+    Right mod -> do
+      ifSet dumpAst (dumpValues "Ast" mod)
+      return mod
+    Left s -> throwError $ ParseError s
 
 parseText :: T.Text -> CompilerM Stmt
 parseText input = do
