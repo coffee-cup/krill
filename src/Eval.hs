@@ -56,14 +56,28 @@ evalBlock (Block stmts) = do
   vals <- mapM evalStmt stmts
   return $ L.last vals
 
-evalLam :: Block -> [Name] -> [Value] -> Eval Value
-evalLam b params args = do
-  env <- gets _env
-  let innerEnv = Map.fromList $ L.zip params args
-  modify (\st -> st { _env =  innerEnv : env })
+buildLamFunc :: Block -> [Name] -> Eval Value
+buildLamFunc b [] = do
   val <- evalBlock b
-  modify (\st -> st { _env = endScope env })
   return val
+buildLamFunc b (x:xs) = do
+  env <- gets _env
+  return $ Lambda (IFunc curriedFunc) env
+  where
+    curriedFunc :: Value -> Eval Value
+    curriedFunc val = do
+      env' <- gets _env
+      useEnv (setValue x val env')
+      buildLamFunc b xs
+
+-- evalLam :: Block -> [Name] -> [Value] -> Eval Value
+-- evalLam b params args = do
+--   env <- gets _env
+--   let innerEnv = Map.fromList $ L.zip params args
+--   useEnv (innerEnv : env)
+--   val <- evalBlock b
+--   useEnv env
+--   return val
 
 evalExpr :: Expr -> Eval Value
 evalExpr (ELit _ l) = evalLit l
@@ -81,9 +95,8 @@ evalExpr (EVar l n) = do
     Nothing  -> throwError $ UnboundVar l n
     Just val -> return val
 evalExpr (EParens _ e) = evalExpr e
-evalExpr (ELam _ params b) = do
-  env <- gets _env
-  return $ Lambda (IFunc $ evalLam b params) env
+evalExpr (ELam _ params b) =
+  buildLamFunc b params
 evalExpr (EApp l e1 e2) = do
   fun <- evalExpr e1
   arg <- evalExpr e2
@@ -91,11 +104,10 @@ evalExpr (EApp l e1 e2) = do
   case fun of
     Lambda (IFunc fn) env -> do
        modify (\st -> st { _env = env })
-       val <- fn [arg]
+       val <- fn arg
        modify (\st -> st { _env = oldEnv })
        return val
     _ -> throwError $ NotFunction l arg
-evalExpr e = throwError $ Default (loc e) "eval expr fall through"
 
 evalStmt :: Stmt -> Eval Value
 evalStmt (SExpr _ e) = evalExpr e
@@ -173,3 +185,6 @@ eqUnCmp op e1 = do
   case v1 of
     (Bool x) -> return $ Bool $ op x
     v        -> throwError $ TypeMismatch (loc e1) "Operand to be boolean" v
+
+useEnv :: Env -> Eval ()
+useEnv env = modify (\st -> st { _env = env } )

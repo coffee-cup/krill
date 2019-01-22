@@ -41,7 +41,7 @@ data Value
   | Nil
   deriving (Eq)
 
-newtype IFunc = IFunc ([Value] -> Eval Value)
+newtype IFunc = IFunc (Value -> Eval Value)
 
 instance Eq IFunc where
   (==) _ _ = False
@@ -75,18 +75,18 @@ endScope :: Env -> Env
 endScope (_:xs) = xs
 endScope []     = []
 
-inInnerScope :: T.Text -> Env -> Bool
+inInnerScope :: Name -> Env -> Bool
 inInnerScope n (x:_) = Map.member n x
 inInnerScope _ []    = False
 
-getValue :: T.Text -> Env -> Maybe Value
+getValue :: Name -> Env -> Maybe Value
 getValue n (x:xs) =
   case Map.lookup n x of
     Just r  -> Just r
     Nothing -> getValue n xs
 getValue _ [] = Nothing
 
-setValue :: T.Text -> Value -> Env -> Env
+setValue :: Name -> Value -> Env -> Env
 setValue n v (x:xs) = Map.insert n v x : xs
 setValue _ _ []     = error "inserting into empty scope"
 

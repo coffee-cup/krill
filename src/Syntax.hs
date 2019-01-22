@@ -22,7 +22,6 @@ data Expr
  | EParens Loc Expr          -- (a)
  deriving (Ord, Show)
 
-
 -- Literals
 
 data Literal
