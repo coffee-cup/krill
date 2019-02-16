@@ -20,6 +20,7 @@ data Expr
  | ELam Loc [Name] Block     -- x -> x + 1
  | ELit Loc Literal          -- 3
  | EIf Loc Expr Block Block  -- if cond then expr else expr
+ | EAss Loc Name Expr        -- a = b
  | EParens Loc Expr          -- (a)
  deriving (Ord, Show)
 
@@ -37,7 +38,6 @@ data Literal
 
 data Stmt
   = SExpr Loc Expr           -- a
-  | SAss Loc Name Expr       -- a = b
   deriving (Ord, Show)
 
 newtype Block = Block [Stmt]
@@ -72,12 +72,12 @@ instance Location Expr where
     ELam l _ _     -> l
     ELit l _       -> l
     EIf l _ _ _    -> l
+    EAss l _ _     -> l
     EParens l _    -> l
 
 instance Location Stmt where
   loc s = case s of
     SExpr l _  -> l
-    SAss l _ _ -> l
 
 instance Eq Expr where
   (==) (EApp _ e1 e2) (EApp _ e3 e4) =
@@ -94,6 +94,8 @@ instance Eq Expr where
     l1 == l2
   (==) (EIf _ c1 e1 e2) (EIf _ c2 e3 e4) =
     c1 == c2 && e1 == e3 && e2 == e4
+  (==) (EAss _ e1 e2) (EAss _ e3 e4) =
+    e1 == e3 && e2 == e4
   (==) (EParens _ e1) (EParens _ e2) =
     e1 == e2
   (==) _ _ = False
@@ -101,8 +103,6 @@ instance Eq Expr where
 instance Eq Stmt where
   (==) (SExpr _ e1) (SExpr _ e2) =
     e1 == e2
-  (==) (SAss _ e1 e2) (SAss _ e3 e4) =
-    e1 == e3 && e2 == e4
 
 mkEApp :: [Expr] -> Expr
 mkEApp = foldl1 (EApp NoLoc)

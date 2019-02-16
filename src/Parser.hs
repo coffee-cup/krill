@@ -123,6 +123,15 @@ pExprIf = do
   elseBlock <- pBlock
   return $ EIf l cond thenBlock elseBlock
 
+pExprAss :: Parser Expr
+pExprAss = do
+  l <- getLoc
+  n <- pName
+  equals
+  e <- pExpr
+  try scn
+  return $ EAss l n e
+
 pExprParens :: Parser Expr
 pExprParens = EParens <$> getLoc <*> parens pExpr <?> "parens"
 
@@ -138,6 +147,7 @@ aexpr = do
 pExpr :: Parser Expr
 pExpr = try pExprLam
   <|> pExprIf
+  <|> try pExprAss
   <|> makeExprParser aexpr operators
 
 -- Statements
@@ -145,18 +155,10 @@ pExpr = try pExprLam
 pStmtExpr :: Parser Stmt
 pStmtExpr = (SExpr <$> getLoc <*> pExpr) <* try scn
 
-pStmtAss :: Parser Stmt
-pStmtAss = do
-  l <- getLoc
-  n <- pName
-  equals
-  e <- pExpr
-  try scn
-  return $ SAss l n e
-
 pStmt :: Parser Stmt
-pStmt = try pStmtAss
-  <|> pStmtExpr
+pStmt = pStmtExpr
+
+-- Blocks
 
 pBlock :: Parser Block
 pBlock = pMultiLine <|> pSingleLine

@@ -71,15 +71,6 @@ buildLamFunc b (x:xs) = do
       useEnv (setValue x val newScope)
       buildLamFunc b xs
 
--- evalLam :: Block -> [Name] -> [Value] -> Eval Value
--- evalLam b params args = do
---   env <- gets _env
---   let innerEnv = Map.fromList $ L.zip params args
---   useEnv (innerEnv : env)
---   val <- evalBlock b
---   useEnv env
---   return val
-
 evalExpr :: Expr -> Eval Value
 evalExpr (ELit _ l) = evalLit l
 evalExpr (EUnOp l n e1) =
@@ -104,6 +95,15 @@ evalExpr (EIf _ eCond eThen eElse) = do
     Bool True -> evalBlock eThen
     Bool False -> evalBlock eElse
     _ -> throwError $ TypeMismatch (loc eCond) "Condition to be boolean" cond
+evalExpr (EAss l n e) = do
+  env <- gets _env
+  let isBound = inInnerScope n env
+  if isBound
+  then throwError $ VariableAlreadyBound l n
+  else do
+    val <- evalExpr e
+    modify (\st -> st { _env = setValue n val env })
+    return val
 evalExpr (EApp l e1 e2) = do
   fun <- evalExpr e1
   arg <- evalExpr e2
@@ -118,17 +118,8 @@ evalExpr (EApp l e1 e2) = do
 
 evalStmt :: Stmt -> Eval Value
 evalStmt (SExpr _ e) = evalExpr e
-evalStmt (SAss l n e) = do
-  env <- gets _env
-  let isBound = inInnerScope n env
-  if isBound
-  then throwError $ VariableAlreadyBound l n
-  else do
-    val <- evalExpr e
-    modify (\st -> st { _env = setValue n val env })
-    return Nil
 
-evalStmt ex = throwError $ Default (loc ex) "eval stmt fall through"
+evalStmt ex          = throwError $ Default (loc ex) "eval stmt fall through"
 
 evalModule :: Module -> Eval ()
 evalModule (Module stmts) = mapM_ evalStmt stmts
