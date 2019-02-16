@@ -98,6 +98,12 @@ evalExpr (EVar l n) = do
 evalExpr (EParens _ e) = evalExpr e
 evalExpr (ELam _ params b) =
   buildLamFunc b params
+evalExpr (EIf _ eCond eThen eElse) = do
+  cond <- evalExpr eCond
+  case cond of
+    Bool True -> evalBlock eThen
+    Bool False -> evalBlock eElse
+    _ -> throwError $ TypeMismatch (loc eCond) "Condition to be boolean" cond
 evalExpr (EApp l e1 e2) = do
   fun <- evalExpr e1
   arg <- evalExpr e2

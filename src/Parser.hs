@@ -17,7 +17,7 @@ pName = pText identifier
 getLoc :: Parser Loc
 getLoc = Located <$> getSourcePos
 
--- Literal Parsers
+-- Literals
 
 pNumberLit :: Parser Literal
 pNumberLit = LitNumber <$> p <?> "number"
@@ -112,6 +112,17 @@ pExprLam = do
   arrow
   ELam l args <$> pBlock
 
+pExprIf :: Parser Expr
+pExprIf = do
+  l <- getLoc
+  rword "if"
+  cond <- pExpr
+  rword "then"
+  thenBlock <- pBlock
+  rword "else"
+  elseBlock <- pBlock
+  return $ EIf l cond thenBlock elseBlock
+
 pExprParens :: Parser Expr
 pExprParens = EParens <$> getLoc <*> parens pExpr <?> "parens"
 
@@ -126,6 +137,7 @@ aexpr = do
 
 pExpr :: Parser Expr
 pExpr = try pExprLam
+  <|> pExprIf
   <|> makeExprParser aexpr operators
 
 -- Statements
