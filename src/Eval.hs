@@ -49,6 +49,7 @@ evalLit (LitString x) = return $ String x
 evalLit (LitChar x)   = return $ Char x
 evalLit (LitBool x)   = return $ Bool x
 evalLit (LitAtom x)   = return $ Atom x
+evalLit LitUnit       = return $ Unit
 
 evalBlock :: Block -> Eval Value
 evalBlock (Block []) = return Unit
