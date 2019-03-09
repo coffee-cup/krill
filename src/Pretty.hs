@@ -167,6 +167,8 @@ instance Pretty Value where
     Lambda _ _ -> text "(lambda)"
     Nil        -> text "nil"
 
+instance Show Value where
+  show = T.unpack . ppg
 
 instance Pretty Env where
   ppr _ env = vcat (fmap ppscope env)

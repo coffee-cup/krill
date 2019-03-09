@@ -94,6 +94,13 @@ spec = do
         parseSimple pExpr "x y -> x" `shouldBe` (Right $ ELam NoLoc ["x", "y"]
                                                 (Block [SExpr NoLoc (EVar NoLoc "x")]))
 
+    describe "If" $ do
+      it "simple if" $
+         parseSimple pExpr "if x then y else z" `shouldBe` (Right $ EIf NoLoc
+                                                           (EVar NoLoc "x")
+                                                           (Block [SExpr NoLoc (EVar NoLoc "y")])
+                                                           (Block [SExpr NoLoc (EVar NoLoc "z")]))
+
     describe "Operators" $ do
       it "unary negation" $
         parseSimple pExpr "-a" `shouldBe` (Right $ EUnOp NoLoc "-" (EVar NoLoc "a"))
