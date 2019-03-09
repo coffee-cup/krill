@@ -102,8 +102,15 @@ evalExpr (EAss l n e) = do
   then throwError $ VariableAlreadyBound l n
   else do
     val <- evalExpr e
-    modify (\st -> st { _env = setValue n val env })
-    return val
+    case val of
+      Lambda func lEnv -> do
+        -- modify environment to allow recursive functions
+        let newVal = Lambda func (setValue n newVal lEnv)
+        modify (\st -> st { _env = setValue n newVal env })
+        return val
+      _ -> do
+        modify (\st -> st { _env = setValue n val env })
+        return val
 evalExpr (EApp l e1 e2) = do
   fun <- evalExpr e1
   arg <- evalExpr e2
@@ -118,8 +125,6 @@ evalExpr (EApp l e1 e2) = do
 
 evalStmt :: Stmt -> Eval Value
 evalStmt (SExpr _ e) = evalExpr e
-
-evalStmt ex          = throwError $ Default (loc ex) "eval stmt fall through"
 
 evalModule :: Module -> Eval ()
 evalModule (Module stmts) = mapM_ evalStmt stmts
