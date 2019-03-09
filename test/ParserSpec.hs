@@ -84,19 +84,15 @@ spec = do
                                              (EApp NoLoc (EVar NoLoc "x") (EVar NoLoc "y"))
                                              (EVar NoLoc "z"))
 
-    -- describe "Lambda" $ do
-    --   it "single line, single param" $
-    --     parseSimple pExpr "\\x -> y" `shouldBe` (Right $ ELam
-    --                                            [Name "x"] [EVar $ Name "y"])
+    describe "Assignment" $ do
+      it "simple assignment" $
+        parseSimple pExpr "a = b" `shouldBe` (Right $ EAss NoLoc "a" (EVar NoLoc "b"))
 
-    --   it "single line, multi param" $
-    --     parseSimple pExpr "\\x y -> x" `shouldBe` (Right $ ELam
-    --                                               [Name "x", Name "y"] [EVar $ Name "x"])
 
-    --   it "multi line, multi param" $
-    --     parseSimpleUnlines pExpr ["\\x y ->", "  1", "  y"] `shouldBe` (Right $ ELam
-    --                                                                    [Name "x", Name "y"]
-    --                                                                    [ELit $ LitInt 1, EVar $ Name "y"])
+    describe "Lambda" $ do
+      it "simple lambda" $
+        parseSimple pExpr "x y -> x" `shouldBe` (Right $ ELam NoLoc ["x", "y"]
+                                                (Block [SExpr NoLoc (EVar NoLoc "x")]))
 
     describe "Operators" $ do
       it "unary negation" $
@@ -192,9 +188,6 @@ spec = do
   describe "Statements" $ do
     it "parses statement expression" $
       parseSimple pStmt "a" `shouldBe` (Right $ SExpr NoLoc $ EVar NoLoc "a")
-
-    it "parses assignment" $
-      parseSimple pStmt "a = b" `shouldBe` (Right $ SAss NoLoc "a" (EVar NoLoc "b"))
 
   describe "Blocks" $ do
     it "parses single line block" $
