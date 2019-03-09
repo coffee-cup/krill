@@ -51,7 +51,7 @@ evalLit (LitBool x)   = return $ Bool x
 evalLit (LitAtom x)   = return $ Atom x
 
 evalBlock :: Block -> Eval Value
-evalBlock (Block []) = return Nil
+evalBlock (Block []) = return Unit
 evalBlock (Block stmts) = do
   vals <- mapM evalStmt stmts
   return $ L.last vals
@@ -175,7 +175,7 @@ eqCmd e1 e2 = do
     go (Number x) (Number y) = return . Bool $ x == y
     go (String x) (String y) = return . Bool $ x == y
     go (Bool x) (Bool y)     = return . Bool $ x == y
-    go Nil Nil               = return $ Bool True
+    go Unit Unit             = return $ Bool True
     go _ _                   = return $ Bool False
 
 numUnOp :: (Double -> Double) -> Expr -> Eval Value

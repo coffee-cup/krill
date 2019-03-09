@@ -49,9 +49,15 @@ spec = do
     it "parses atom" $ do
       parseSimple pLiteral ":atom" `shouldBe` (Right $ LitAtom "atom")
 
+    it "parses unit" $ do
+      parseSimple pLiteral "()" `shouldBe` (Right $ LitUnit)
+
   describe "Expressions" $ do
     it "parses expression literal" $ do
       parseSimple pExpr "3.2" `shouldBe` (Right $ ELit NoLoc (LitNumber 3.2))
+
+    it "parses expression literal unit" $ do
+      parseSimple pExpr "()" `shouldBe` (Right $ ELit NoLoc LitUnit)
 
     describe "Variables" $ do
       it "lowercase simple var" $

@@ -112,6 +112,7 @@ instance Pretty Literal where
     LitString x   -> doubleQuotes $ pp x
     LitBool True  -> text "true"
     LitBool False -> text "false"
+    LitUnit       -> text "()"
 
 ppapp :: Int -> Expr -> Doc
 ppapp p e = parensIf (p>0) $ ppr p f <+> args
@@ -165,7 +166,7 @@ instance Pretty Value where
     Bool True  -> text "true"
     Bool False -> text "false"
     Lambda _ _ -> text "(lambda)"
-    Nil        -> text "nil"
+    Unit       -> text "()"
 
 instance Show Value where
   show = T.unpack . ppg

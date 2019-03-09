@@ -38,7 +38,7 @@ data Value
   | Char Char
   | Bool Bool
   | Lambda IFunc Env
-  | Nil
+  | Unit
   deriving (Eq)
 
 newtype IFunc = IFunc (Value -> Eval Value)

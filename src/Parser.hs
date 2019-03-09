@@ -54,12 +54,18 @@ pAtomLit = p <?> "atom"
       colon
       LitAtom <$> pName
 
+pUnitLit :: Parser Literal
+pUnitLit = p <?> "unit"
+  where
+    p = unit *> return LitUnit
+
 pLiteral :: Parser Literal
 pLiteral = pNumberLit
   <|> pCharLit
   <|> pStringLit
   <|> pBoolLit
   <|> pAtomLit
+  <|> pUnitLit
 
 -- Expressions
 
@@ -137,8 +143,8 @@ pExprParens = EParens <$> getLoc <*> parens pExpr <?> "parens"
 
 aexpr :: Parser Expr
 aexpr = do
-  r <- some $ choice [ pExprParens
-                     , pExprLiteral
+  r <- some $ choice [ try pExprLiteral
+                     , pExprParens
                      , pExprVar
                      ]
   l <- getLoc
