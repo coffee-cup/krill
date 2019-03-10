@@ -173,14 +173,19 @@ eqCmd :: Expr -> Expr -> Eval Value
 eqCmd e1 e2 = do
   v1 <- evalExpr e1
   v2 <- evalExpr e2
-  go v1 v2
+  return . Bool $ go v1 v2
   where
-    go (Atom x) (Atom y)     = return . Bool $ x == y
-    go (Number x) (Number y) = return . Bool $ x == y
-    go (String x) (String y) = return . Bool $ x == y
-    go (Bool x) (Bool y)     = return . Bool $ x == y
-    go Unit Unit             = return $ Bool True
-    go _ _                   = return $ Bool False
+    go :: Value -> Value -> Bool
+    go (Atom x) (Atom y)     = x == y
+    go (Number x) (Number y) = x == y
+    go (String x) (String y) = x == y
+    go (Bool x) (Bool y)     = x == y
+    go (List xs) (List ys)   =
+      (L.length xs) == (L.length ys) && L.all goZipped (L.zip xs ys)
+    go Unit Unit             = True
+    go _ _                   = False
+    goZipped :: (Value, Value) -> Bool
+    goZipped (x, y) = go x y
 
 numUnOp :: (Double -> Double) -> Expr -> Eval Value
 numUnOp op e1 = do
