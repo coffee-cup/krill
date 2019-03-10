@@ -138,6 +138,14 @@ pExprAss = do
   try scn
   return $ EAss l n e
 
+pExprList :: Parser Expr
+pExprList = do
+  l <- getLoc
+  lbracket
+  xs <- pExpr `sepBy` comma
+  rbracket
+  return $ EList l xs
+
 pExprParens :: Parser Expr
 pExprParens = EParens <$> getLoc <*> parens pExpr <?> "parens"
 
@@ -145,6 +153,7 @@ aexpr :: Parser Expr
 aexpr = do
   r <- some $ choice [ try pExprLiteral
                      , pExprParens
+                     , pExprList
                      , pExprVar
                      ]
   l <- getLoc

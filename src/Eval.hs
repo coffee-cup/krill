@@ -112,6 +112,9 @@ evalExpr (EAss l n e) = do
       _ -> do
         modify (\st -> st { _env = setValue n val env })
         return val
+evalExpr (EList _ xs) = do
+  vs <- mapM evalExpr xs
+  return $ List vs
 evalExpr (EApp l e1 e2) = do
   fun <- evalExpr e1
   arg <- evalExpr e2

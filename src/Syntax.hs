@@ -21,6 +21,7 @@ data Expr
  | ELit Loc Literal          -- 3
  | EIf Loc Expr Block Block  -- if cond then expr else expr
  | EAss Loc Name Expr        -- a = b
+ | EList Loc [Expr]          -- [1, x, "hello"]
  | EParens Loc Expr          -- (a)
  deriving (Ord, Show)
 
