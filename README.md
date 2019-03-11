@@ -38,9 +38,9 @@ x = add10 10
 
 ### Lambdas
 
-There are no top level function in krill, only lambas. A lambda is a set of
+There are no top level functions in krill, only lambas. A lambda is a set of
 space separated parameters followed by an arrow `->`. The body of a function is
-a block. A block is an expression, or multiple expressions instead some curlies
+a block. A block is an expression, or multiple expressions inside some curlies
 `{}`. For example, the following two lambdas are equivalent.
 
 ```
@@ -56,12 +56,24 @@ The last expression in a block is returned.
 ### If then else
 
 You can define an if statement with the `if condition then trueBlock else
-elseBlock` syntax. For example,
+elseBlock` syntax. For example, these are all equivalent.
 
 ```
-if x == 2 then "its two!" else {
-  "its not two."
+if yes then "yes!" else "no."
+
+if yes then {
+  "yes!"
+} else {
+  "no."
 }
+
+if yes then "yes!" else {
+  "no."
+}
+
+if yes then {
+  "yes!"
+} else "no."
 ```
 
 ### Lists
