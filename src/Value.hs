@@ -38,6 +38,7 @@ data Value
   | Char Char
   | Bool Bool
   | Lambda IFunc Env
+  | List [Value]
   | Unit
   deriving (Eq)
 

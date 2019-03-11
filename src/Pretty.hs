@@ -133,6 +133,8 @@ instance Pretty Expr where
     EVar _ n -> pp n
     e@(ELam _ args b) ->
       parensIf (p>0) $ block (hsep (fmap pp args) <+> "->") b
+    EList _ xs -> text "[" <> hsep pxs <> text "]"
+      where pxs = punctuate (text ", ") $ fmap pp xs
     EAss _ n e -> pp n <+> equals <+> ppr p e
     EParens _ e -> parens (pp e)
 
@@ -166,6 +168,9 @@ instance Pretty Value where
     Bool True  -> text "true"
     Bool False -> text "false"
     Lambda _ _ -> text "(lambda)"
+    List xs ->
+      text "[" <> hsep pxs <> text "]"
+      where pxs = punctuate (text ",") $ fmap pp xs
     Unit       -> text "()"
 
 instance Show Value where
