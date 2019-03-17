@@ -22,6 +22,7 @@ data Expr
  | EIf Loc Expr Block Block  -- if cond then expr else expr
  | EAss Loc Name Expr        -- a = b
  | EList Loc [Expr]          -- [1, x, "hello"]
+ | EListAcc Loc Name Expr     -- list[x]
  | EParens Loc Expr          -- (a)
  deriving (Ord, Show)
 
@@ -98,6 +99,10 @@ instance Eq Expr where
     c1 == c2 && e1 == e3 && e2 == e4
   (==) (EAss _ e1 e2) (EAss _ e3 e4) =
     e1 == e3 && e2 == e4
+  (==) (EList _ xs1) (EList _ xs2) =
+    xs1 == xs2
+  (==) (EListAcc _ n1 e1) (EListAcc _ n2 e2) =
+    n1 == n2 && e1 == e2
   (==) (EParens _ e1) (EParens _ e2) =
     e1 == e2
   (==) _ _ = False

@@ -146,6 +146,15 @@ pExprList = do
   rbracket
   return $ EList l xs
 
+pExprListAcc :: Parser Expr
+pExprListAcc = do
+  l <- getLoc
+  n <- pName
+  lbracket
+  e <- pExpr
+  rbracket
+  return $ EListAcc l n e
+
 pExprParens :: Parser Expr
 pExprParens = EParens <$> getLoc <*> parens pExpr <?> "parens"
 
@@ -154,7 +163,8 @@ aexpr = do
   r <- some $ choice [ try pExprLiteral
                      , pExprParens
                      , pExprList
-                     , pExprVar
+                     , try pExprListAcc
+                     , try pExprVar
                      ]
   l <- getLoc
   return $ Prelude.foldl1 (EApp l) r

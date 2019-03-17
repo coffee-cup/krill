@@ -54,6 +54,9 @@ data EvalError
   | NotFunction Loc Value
   | OperatorNotFound Loc Name
   | VariableAlreadyBound Loc T.Text
+  | VariableNotAList Loc T.Text
+  | IndexNotAnInteger Loc Value
+  | IndexOutOfRange Loc Integer
   | Default Loc T.Text
   deriving (Eq)
 

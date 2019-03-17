@@ -100,6 +100,9 @@ instance Pretty EvalError where
     NotFunction l val      -> withLocation l ("Error Not a Function:" <+> pp val)
     OperatorNotFound l n   -> withLocation l ("Error Operator `" <> pp n <> "` Not Found")
     VariableAlreadyBound l n -> withLocation l ("Error Variable `" <> pp n <> "` Already Bound")
+    VariableNotAList l n     -> withLocation l (pp n <+> "is not a list")
+    IndexNotAnInteger l v -> withLocation l ("index" <+> pp v <+> "is not an integer")
+    IndexOutOfRange l i -> withLocation l ("index" <+> (integer i) <+> "is out of range")
     Default l val          -> withLocation l ("Error Evaluation:" <+> pp val)
 
 -- Syntax

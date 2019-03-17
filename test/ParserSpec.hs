@@ -116,6 +116,12 @@ spec = do
                                               [ ELit NoLoc $ LitNumber 1
                                               , EVar NoLoc "a"])
 
+
+    describe "list access" $ do
+      it "accesses list" $
+        parseSimple pExpr "a[1]" `shouldBe` (Right $ EListAcc NoLoc
+                                            "a" (ELit NoLoc $ LitNumber 1))
+
     describe "Operators" $ do
       it "unary negation" $
         parseSimple pExpr "-a" `shouldBe` (Right $ EUnOp NoLoc "-" (EVar NoLoc "a"))

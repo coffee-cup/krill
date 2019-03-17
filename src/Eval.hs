@@ -22,6 +22,8 @@ import           Value
 type Binary = Expr -> Expr -> Eval Value
 type Unary = Expr -> Eval Value
 
+isInt x = x == fromInteger (round x)
+
 binOperators :: Map.Map T.Text Binary
 binOperators = Map.fromList
   [ ("+", numBinOp (+))
@@ -115,6 +117,22 @@ evalExpr (EAss l n e) = do
 evalExpr (EList _ xs) = do
   vs <- mapM evalExpr xs
   return $ List vs
+evalExpr (EListAcc l eName eIdx) = do
+  mList <- evalExpr (EVar l eName)
+  idx <- evalExpr eIdx
+  case idx of
+    Number n ->
+      if isInt n then
+        case mList of
+            List xs ->
+              if (L.length xs) <= (round n)
+              then throwError $ IndexOutOfRange l (round n)
+              else return (xs !! (round n))
+            _ ->
+              throwError $ VariableNotAList l eName
+      else throwError $ IndexNotAnInteger l idx
+    _ ->
+      throwError $ IndexNotAnInteger l mList
 evalExpr (EApp l e1 e2) = do
   fun <- evalExpr e1
   arg <- evalExpr e2
