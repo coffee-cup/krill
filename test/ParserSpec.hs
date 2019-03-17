@@ -107,6 +107,15 @@ spec = do
                                                            (Block [SExpr NoLoc (EVar NoLoc "y")])
                                                            (Block [SExpr NoLoc (EVar NoLoc "z")]))
 
+    describe "list" $ do
+      it "empty list" $
+        parseSimple pExpr "[]" `shouldBe` (Right $ EList NoLoc [])
+
+      it "list with items" $
+        parseSimple pExpr "[1, a]" `shouldBe` (Right $ EList NoLoc
+                                              [ ELit NoLoc $ LitNumber 1
+                                              , EVar NoLoc "a"])
+
     describe "Operators" $ do
       it "unary negation" $
         parseSimple pExpr "-a" `shouldBe` (Right $ EUnOp NoLoc "-" (EVar NoLoc "a"))
