@@ -142,7 +142,7 @@ evalExpr (EApp l e1 e2) = do
       modify (\st -> st { _env = oldEnv })
       return val
     BuiltIn (BFunc fn) -> do
-      val <- fn l arg
+      val <- fn (loc e2) arg
       return val
     _ -> throwError $ NotFunction l arg
 

@@ -29,3 +29,4 @@ length l v = case v of
   List xs ->
     return $ Number $ fromIntegral $ Prelude.length xs
   _ -> throwError $ TypeMismatch l "argument to be list" v
+
