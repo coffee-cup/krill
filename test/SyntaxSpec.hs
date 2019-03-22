@@ -5,7 +5,7 @@ module SyntaxSpec (spec) where
 import qualified Data.Text.Lazy as T
 import           Test.Hspec
 
-import           Syntax
+import           Parser.Syntax
 
 spec :: Spec
 spec = do

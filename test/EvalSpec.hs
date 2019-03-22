@@ -5,11 +5,12 @@ module EvalSpec (spec) where
 import qualified Data.Text.Lazy as T
 import           Test.Hspec
 
-import           Eval
-import           Parser
+import           Eval.Env
+import           Eval.Eval
+import           Eval.Value
+import           Parser.Parser
+import           Parser.Syntax
 import           Pretty
-import           Syntax
-import           Value
 
 spec :: Spec
 spec = do

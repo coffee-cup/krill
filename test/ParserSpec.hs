@@ -7,9 +7,9 @@ import qualified Data.Text.Lazy as T
 import           Test.Hspec
 -- import           Test.Hspec.Expectations.Contrib
 
-import           Lexer
-import           Parser
-import           Syntax
+import           Parser.Lexer
+import           Parser.Parser
+import           Parser.Syntax
 
 spec :: Spec
 spec = do
@@ -121,6 +121,11 @@ spec = do
       it "accesses list" $
         parseSimple pExpr "a[1]" `shouldBe` (Right $ EListAcc NoLoc
                                             "a" (ELit NoLoc $ LitNumber 1))
+
+      it "should not access list" $
+        parseSimple pExpr "a [1]" `shouldBe` (Right $ EApp NoLoc
+                                               (EVar NoLoc "a")
+                                               (EList NoLoc [ELit NoLoc $ LitNumber 1]))
 
     describe "Operators" $ do
       it "unary negation" $
