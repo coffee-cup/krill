@@ -4,7 +4,6 @@ module Parser.Lexer where
 
 import           Control.Applicative        hiding (many, some)
 import           Control.Monad              (void)
-import           Data.Char
 import qualified Data.Text.Lazy             as T
 import           Data.Void
 import           Text.Megaparsec
@@ -105,15 +104,21 @@ reservedWords =
 rword :: String -> Parser ()
 rword w = (lexeme . try) (string (T.pack w) *> notFollowedBy alphaNumChar)
 
--- Parse an identifier
-identifier :: Parser String
-identifier = (lexeme . try) (p >>= check)
+idCheck :: Parser String
+idCheck = (p >>= check)
   where
     p = (:) <$> (oneOf $ letterCharUnder) <*> many (oneOf $ '_' : letterCharUnder ++ ['0'..'9'])
     letterCharUnder = '_' : ['a'..'z'] ++ ['A'..'Z']
     check x = if x `elem` reservedWords
                  then fail $ "keyword " ++ show x ++ " cannot be an identifier"
                  else return x
+
+-- Parse an identifier and consume whitespace after
+identifier :: Parser String
+identifier = (lexeme . try) idCheck
+
+idn :: Parser String
+idn = idCheck
 
 -- Parse an identifier that passes a predicate
 predIdentifier :: (String -> Bool) -> String -> Parser String

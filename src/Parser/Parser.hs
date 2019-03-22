@@ -14,6 +14,9 @@ import           Parser.Syntax
 pName :: Parser Name
 pName = pText identifier
 
+pId :: Parser Name
+pId = pText idn
+
 getLoc :: Parser Loc
 getLoc = Located <$> getSourcePos
 
@@ -149,7 +152,7 @@ pExprList = do
 pExprListAcc :: Parser Expr
 pExprListAcc = do
   l <- getLoc
-  n <- pName
+  n <- pId
   lbracket
   e <- pExpr
   rbracket
