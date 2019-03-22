@@ -7,13 +7,13 @@ import           Data.Text.Lazy.IO    as T
 import           System.Directory
 
 import           CompilerError
-import           Eval
+import           Eval.Eval
+import           Eval.Value
 import           Flags
 import           Monad
-import           Parser
+import           Parser.Parser
+import           Parser.Syntax
 import           Pretty
-import           Syntax
-import           Value
 
 compileFile :: CompilerM ()
 compileFile = do
@@ -41,7 +41,7 @@ parseModule :: CompilerM Module
 parseModule  = do
   Just fname <- gets _fname
   Just src <- gets _src
-  case Parser.parseModule (T.pack fname) src of
+  case Parser.Parser.parseModule (T.pack fname) src of
     Right mod -> do
       ifSet dumpAst (dumpValues "Ast" mod)
       return mod

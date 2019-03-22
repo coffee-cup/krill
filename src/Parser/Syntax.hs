@@ -1,6 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 
-module Syntax where
+module Parser.Syntax where
 
 import qualified Data.Text.Lazy  as T
 import           Text.Megaparsec (SourcePos)
@@ -76,6 +76,8 @@ instance Location Expr where
     ELit l _       -> l
     EIf l _ _ _    -> l
     EAss l _ _     -> l
+    EList l _      -> l
+    EListAcc l _ _ -> l
     EParens l _    -> l
 
 instance Location Stmt where

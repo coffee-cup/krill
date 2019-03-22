@@ -1,6 +1,6 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module Value where
+module Eval.Value where
 
 import           Control.Monad.Except
 import           Control.Monad.Fail   hiding (fail)
@@ -8,7 +8,7 @@ import           Control.Monad.State
 import qualified Data.Map             as Map
 import qualified Data.Text.Lazy       as T
 
-import           Syntax
+import           Parser.Syntax
 
 type Env = [Map.Map Name Value]
 
@@ -68,31 +68,6 @@ instance Location EvalError where
     NotFunction l _      -> l
     OperatorNotFound l _ -> l
     Default l _          -> l
-
-basicState :: EvalState
-basicState = EvalState [Map.empty]
-
-enterScope :: Env -> Env
-enterScope xs = Map.empty : xs
-
-endScope :: Env -> Env
-endScope (_:xs) = xs
-endScope []     = []
-
-inInnerScope :: Name -> Env -> Bool
-inInnerScope n (x:_) = Map.member n x
-inInnerScope _ []    = False
-
-getValue :: Name -> Env -> Maybe Value
-getValue n (x:xs) =
-  case Map.lookup n x of
-    Just r  -> Just r
-    Nothing -> getValue n xs
-getValue _ [] = Nothing
-
-setValue :: Name -> Value -> Env -> Env
-setValue n v (x:xs) = Map.insert n v x : xs
-setValue _ _ []     = error "inserting into empty scope"
 
 runEval :: Eval a -> EvalState -> IO (Either EvalError a, EvalState)
 runEval = runStateT . runExceptT . unEval

@@ -1,6 +1,6 @@
 module CompilerError where
 
-import           Value
+import           Eval.Value
 
 data CompilerError
   = FileNotFound FilePath

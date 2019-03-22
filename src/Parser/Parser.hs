@@ -1,4 +1,4 @@
-module Parser where
+module Parser.Parser where
 
 import           Control.Monad.Combinators.Expr
 import qualified Data.Text.Lazy                 as T
@@ -8,8 +8,8 @@ import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer     as L
 import           Text.Megaparsec.Error
 
-import           Lexer
-import           Syntax
+import           Parser.Lexer
+import           Parser.Syntax
 
 pName :: Parser Name
 pName = pText identifier

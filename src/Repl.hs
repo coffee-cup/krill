@@ -14,10 +14,10 @@ import           System.Console.Repline
 import           System.Exit
 
 import           Compiler
+import           Eval.Value
 import           Flags
 import           Monad
 import           Pretty
-import           Value
 
 -- Types
 

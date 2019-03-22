@@ -14,8 +14,8 @@ import           Text.Megaparsec  (sourcePosPretty)
 import           Text.PrettyPrint
 
 import           CompilerError
-import           Syntax
-import           Value
+import           Eval.Value
+import           Parser.Syntax
 
 class Pretty p where
   ppr :: Int -> p -> Doc

@@ -4,24 +4,22 @@
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE TypeSynonymInstances       #-}
 
-module Eval where
+module Eval.Eval where
 
-import           Control.Monad
 import           Control.Monad.Except
-import           Control.Monad.Fail
 import           Control.Monad.State
 import           Data.List            as L
 import qualified Data.Map             as Map
-import           Data.Monoid
 import           Data.Text.Lazy       as T
-import           Data.Text.Lazy.IO    as T
 
-import           Syntax
-import           Value
+import           Eval.Env
+import           Eval.Value
+import           Parser.Syntax
 
 type Binary = Expr -> Expr -> Eval Value
 type Unary = Expr -> Eval Value
 
+isInt :: RealFrac a => a -> Bool
 isInt x = x == fromInteger (round x)
 
 binOperators :: Map.Map T.Text Binary
