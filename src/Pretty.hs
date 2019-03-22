@@ -171,6 +171,7 @@ instance Pretty Value where
     Bool True  -> text "true"
     Bool False -> text "false"
     Lambda _ _ -> text "(lambda)"
+    BuiltIn _  -> text "(builtin)"
     List xs ->
       text "[" <> hsep pxs <> text "]"
       where pxs = punctuate (text ",") $ fmap pp xs

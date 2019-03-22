@@ -137,10 +137,13 @@ evalExpr (EApp l e1 e2) = do
   oldEnv <- gets _env
   case fun of
     Lambda (IFunc fn) env -> do
-       modify (\st -> st { _env = env })
-       val <- fn arg
-       modify (\st -> st { _env = oldEnv })
-       return val
+      modify (\st -> st { _env = env })
+      val <- fn arg
+      modify (\st -> st { _env = oldEnv })
+      return val
+    BuiltIn (BFunc fn) -> do
+      val <- fn l arg
+      return val
     _ -> throwError $ NotFunction l arg
 
 evalStmt :: Stmt -> Eval Value

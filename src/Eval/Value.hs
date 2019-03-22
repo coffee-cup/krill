@@ -38,13 +38,18 @@ data Value
   | Char Char
   | Bool Bool
   | Lambda IFunc Env
+  | BuiltIn BFunc
   | List [Value]
   | Unit
   deriving (Eq)
 
 newtype IFunc = IFunc (Value -> Eval Value)
+newtype BFunc = BFunc (Loc -> Value -> Eval Value)
 
 instance Eq IFunc where
+  (==) _ _ = False
+
+instance Eq BFunc where
   (==) _ _ = False
 
 data EvalError
