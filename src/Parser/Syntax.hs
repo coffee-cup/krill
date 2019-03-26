@@ -19,7 +19,8 @@ data Expr
  | EVar Loc Name             -- a
  | ELam Loc [Name] Block     -- x -> x + 1
  | ELit Loc Literal          -- 3
- | EIf Loc Expr Block Block  -- if cond then expr else expr
+ | EIf Loc Expr Block Block  -- if cond then block else block
+ | EFor Loc Name Expr Block  -- for i in [1,2,3] block
  | EAss Loc Name Expr        -- a = b
  | EList Loc [Expr]          -- [1, x, "hello"]
  | EListAcc Loc Name Expr     -- list[x]
@@ -75,6 +76,7 @@ instance Location Expr where
     ELam l _ _     -> l
     ELit l _       -> l
     EIf l _ _ _    -> l
+    EFor l _ _ _   -> l
     EAss l _ _     -> l
     EList l _      -> l
     EListAcc l _ _ -> l
@@ -99,6 +101,8 @@ instance Eq Expr where
     l1 == l2
   (==) (EIf _ c1 e1 e2) (EIf _ c2 e3 e4) =
     c1 == c2 && e1 == e3 && e2 == e4
+  (==) (EFor _ n1 e1 b1) (EFor _ n2 e2 b2) =
+    n1 == n2 && e1 == e2 && b1 == b2
   (==) (EAss _ e1 e2) (EAss _ e3 e4) =
     e1 == e3 && e2 == e4
   (==) (EList _ xs1) (EList _ xs2) =

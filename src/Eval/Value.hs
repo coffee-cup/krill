@@ -57,6 +57,7 @@ data EvalError
   | UnboundVar Loc T.Text
   | NumArgs Loc Integer Integer
   | NotFunction Loc Value
+  | NotList Loc Value
   | OperatorNotFound Loc Name
   | VariableAlreadyBound Loc T.Text
   | VariableNotAList Loc T.Text

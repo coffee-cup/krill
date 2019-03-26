@@ -98,6 +98,7 @@ instance Pretty EvalError where
     NumArgs l n args       ->
       withLocation l ("Error Number of Arguments, expected:" <+> integer n <+> "recieved:" <+> integer n)
     NotFunction l val      -> withLocation l ("Error Not a Function:" <+> pp val)
+    NotList l val -> withLocation l ("Error Not a List:" <+> pp val)
     OperatorNotFound l n   -> withLocation l ("Error Operator `" <> pp n <> "` Not Found")
     VariableAlreadyBound l n -> withLocation l ("Error Variable `" <> pp n <> "` Already Bound")
     VariableNotAList l n     -> withLocation l (pp n <+> "is not a list")

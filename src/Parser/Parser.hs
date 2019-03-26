@@ -132,6 +132,16 @@ pExprIf = do
   elseBlock <- pBlock
   return $ EIf l cond thenBlock elseBlock
 
+pExprFor :: Parser Expr
+pExprFor = do
+  l <- getLoc
+  rword "for"
+  name <- pName
+  rword "in"
+  e <- pExpr
+  b <- pBlock
+  return $ EFor l name e b
+
 pExprAss :: Parser Expr
 pExprAss = do
   l <- getLoc
@@ -175,6 +185,7 @@ aexpr = do
 pExpr :: Parser Expr
 pExpr = try pExprLam
   <|> pExprIf
+  <|> pExprFor
   <|> try pExprAss
   <|> makeExprParser aexpr operators
 

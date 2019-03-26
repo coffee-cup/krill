@@ -98,6 +98,8 @@ reservedWords =
   , "module"
   , "true"
   , "false"
+  , "for"
+  , "in"
   ]
 
 -- Parse a reserved word

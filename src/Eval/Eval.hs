@@ -96,6 +96,17 @@ evalExpr (EIf _ eCond eThen eElse) = do
     Bool True -> evalBlock eThen
     Bool False -> evalBlock eElse
     _ -> throwError $ TypeMismatch (loc eCond) "Condition to be boolean" cond
+evalExpr (EFor _ n eList b) = do
+  list <- evalExpr eList
+  env <- gets _env
+  case list of
+    List xs -> do
+      forM_ xs (\v -> do
+                   modify (\st -> st { _env = setValue n v env })
+                   evalBlock b)
+      modify (\st -> st { _env = env })
+      return Unit
+    v -> throwError $ NotList (loc eList) v
 evalExpr (EAss l n e) = do
   env <- gets _env
   let isBound = inInnerScope n env
