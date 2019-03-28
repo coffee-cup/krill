@@ -30,6 +30,14 @@ spec = do
     it "function call" $ do
       checkEval ["foo = x y -> x + y", "foo 2 3"] (Number 5)
 
+    it "if true branch" $ do
+      checkEval [ "x = true"
+                , "if x then 1 else 2"] (Number 1)
+
+    it "if false branch" $ do
+      checkEval [ "x = 1"
+                , "if x == 2 then 1 else 2"] (Number 2)
+
     it "recursive function" $ do
       checkEval [ "foo = n -> if n == 0 then :hello else foo (n - 1)"
                 , "foo 10"] (Atom "hello")
@@ -65,7 +73,7 @@ getStmt text =
 parseAndEval :: [T.Text] -> IO Value
 parseAndEval texts =
   let stmts = map getStmt texts
-      block = Block stmts
+      b = Block stmts
   in do
-    (Right val, _) <- runEval (evalBlock block) basicState
+    (Right val, _) <- runEval (evalBlock b) basicState
     return val
