@@ -107,7 +107,14 @@ spec = do
                                                            (Block [SExpr NoLoc (EVar NoLoc "y")])
                                                            (Block [SExpr NoLoc (EVar NoLoc "z")]))
 
-    describe "list" $ do
+    describe "For" $ do
+      it "simple for" $
+        parseSimple pExpr "for i in [1] { i }" `shouldBe` (Right $ EFor NoLoc
+                                                          "i"
+                                                          (EList NoLoc [ELit NoLoc $ LitNumber 1])
+                                                          (Block [SExpr NoLoc (EVar NoLoc "i")]))
+
+    describe "List" $ do
       it "empty list" $
         parseSimple pExpr "[]" `shouldBe` (Right $ EList NoLoc [])
 
@@ -117,7 +124,7 @@ spec = do
                                               , EVar NoLoc "a"])
 
 
-    describe "list access" $ do
+    describe "List Access" $ do
       it "accesses list" $
         parseSimple pExpr "a[1]" `shouldBe` (Right $ EListAcc NoLoc
                                             "a" (ELit NoLoc $ LitNumber 1))
