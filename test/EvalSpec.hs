@@ -59,6 +59,23 @@ spec = do
                 , "}"]
                 , "foo 0"] (Number 3)
 
+    describe "Builtins" $ do
+      describe "length" $ do
+        it "empty list" $ do
+          checkEval [ "length []"] (Number 0)
+
+        it "non-empty list" $ do
+          checkEval [ "length [1, 2, 3]"] (Number 3)
+
+      it "map" $ do
+        checkEval [ "map (x -> x * x) [1,2,3]"] (List [Number 1, Number 4, Number 9])
+
+      it "foldl" $ do
+        checkEval [ "foldl (acc curr -> acc - curr) 0 [1,2,3]"] (Number $ -6)
+
+      it "foldr" $ do
+        checkEval [ "foldr (acc curr -> acc - curr) 0 [1,2,3]"] (Number 2)
+
 checkEval :: [String] -> Value -> IO ()
 checkEval text expected = do
   actual <- parseAndEval (map T.pack text)
