@@ -17,22 +17,10 @@ Here is a taste of the language
 
 ```
 add = a b -> a + b
-add10 = add 10
-x = add10 10
-# x = 20
+sum = reduce add 0
+sum [1, 2, 3]
+# => 6
 ```
-
-## TODO
-
-- [x] Repl
-- [x] Parser
-- [x] Evaluator
-- [x] Closures
-- [x] Recursive closures
-- [x] Lists
-- [ ] Built in functions (print, length, etc.)
-- [ ] Standard library
-- [ ] Error handling
 
 ## Syntax
 
@@ -55,32 +43,8 @@ The last expression in a block is returned.
 
 ### If then else
 
-You can define an if statement with the `if condition then trueBlock else
-elseBlock` syntax. For example, these are all equivalent.
-
-```
-if yes then "yes!" else "no."
-
-if yes then {
-  "yes!"
-} else {
-  "no."
-}
-
-if yes then "yes!" else {
-  "no."
-}
-
-if yes then {
-  "yes!"
-} else "no."
-```
+### Loops
 
 ### Lists
 
-You define lists the same way as in any programming language.
-
-```
-[1, 2, 3]
-```
-
+### I/O
