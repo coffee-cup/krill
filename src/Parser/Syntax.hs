@@ -23,9 +23,12 @@ data Expr
  | EFor Loc Name Expr Block  -- for i in [1,2,3] block
  | EAss Loc Name Expr        -- a = b
  | EList Loc [Expr]          -- [1, x, "hello"]
- | EListAcc Loc Name Expr     -- list[x]
+ | EListAcc Loc Name Expr    -- list[x]
  | EParens Loc Expr          -- (a)
  deriving (Ord, Show)
+
+newtype Block = Block [Stmt]
+  deriving (Eq, Ord, Show)
 
 -- Literals
 
@@ -43,9 +46,6 @@ data Literal
 data Stmt
   = SExpr Loc Expr           -- a
   deriving (Ord, Show)
-
-newtype Block = Block [Stmt]
-  deriving (Eq, Ord, Show)
 
 -- Declarations
 
