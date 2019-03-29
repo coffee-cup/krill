@@ -233,3 +233,4 @@ eqUnCmp op e1 = do
 
 useEnv :: Env -> Eval ()
 useEnv env = modify (\st -> st { _env = env } )
+
