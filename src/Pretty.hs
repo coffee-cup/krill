@@ -95,8 +95,11 @@ instance Pretty EvalError where
     TypeMismatch l txt val -> withLocation l ("Type Mismatch.\n\tExpected:"
                                               <+> pp txt <+> "\n\tReceived:" <+> pp val)
     UnboundVar l txt       -> withLocation l ("Error Unbound Variable:" <+> pp txt)
-    NumArgs l n args       ->
-      withLocation l ("Error Number of Arguments, expected:" <+> integer n <+> "recieved:" <+> integer n)
+    NumArgs l expected received ->
+      withLocation l ("Error Number of Arguments, expected:"
+                      <+> integer expected
+                      <+> "recieved:"
+                      <+> integer received)
     NotFunction l val      -> withLocation l ("Error Not a Function:" <+> pp val)
     NotList l val -> withLocation l ("Error Not a List:" <+> pp val)
     OperatorNotFound l n   -> withLocation l ("Error Operator `" <> pp n <> "` Not Found")
