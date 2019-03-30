@@ -7,7 +7,9 @@ import           Control.Monad
 import           Control.Monad.Except
 import           Control.Monad.State
 import           Data.Foldable
+import           Data.Text.Lazy       as T
 import           Data.Text.Lazy.IO    as T
+import           Text.Read            hiding (Number, String)
 
 import           Eval.Value
 import           Parser.Syntax
@@ -20,10 +22,24 @@ builtIns =
   , ("map", mkB Eval.BuiltIn.map)
   , ("foldl", mkB Eval.BuiltIn.foldl)
   , ("foldr", mkB Eval.BuiltIn.foldr)
+  , ("toNumber", mkB Eval.BuiltIn.toNumber)
   ]
 
 mkB :: (Loc -> Value -> Eval Value) -> Value
 mkB fn = BuiltIn $ BFunc fn
+
+checkListArg :: Loc -> Value -> Eval ()
+checkListArg _ (List _) = return ()
+checkListArg l arg      = throwError $ TypeMismatch l "list" arg
+
+checkFnArg :: Loc -> Value -> Eval ()
+checkFnArg _ (Lambda _ _) = return ()
+checkFnArg _ (BuiltIn _)  = return ()
+checkFnArg l arg          = throwError $ TypeMismatch l "function" arg
+
+checkStringArg :: Loc -> Value -> Eval ()
+checkStringArg _ (String _) = return ()
+checkStringArg l arg        =  throwError $ TypeMismatch l "string" arg
 
 print :: Loc -> Value -> Eval Value
 print _ v = do
@@ -31,10 +47,8 @@ print _ v = do
   return Unit
 
 length :: Loc -> Value -> Eval Value
-length l v = case v of
-  List xs ->
-    return $ Number $ fromIntegral $ Prelude.length xs
-  _ -> throwError $ TypeMismatch l "argument to be list" v
+length _ (List xs) = return $ Number $ fromIntegral $ Prelude.length xs
+length  l  v       = throwError $ TypeMismatch l "list" v
 
 map :: Loc -> Value -> Eval Value
 map l1 arg1 = do
@@ -53,6 +67,7 @@ map l1 arg1 = do
     evalMap l (BuiltIn (BFunc fn)) (List xs) = do
         ys <- mapM (fn l) xs
         return $ List ys
+    evalMap l _ _ = throwError $ Default l "evalMap fall through"
 
 foldBuiltIn ::
   ((Value -> Value -> Eval Value) -> Value -> [Value] -> Eval Value)
@@ -98,15 +113,9 @@ foldl = foldBuiltIn foldlM
 foldr :: Loc -> Value -> Eval Value
 foldr = foldBuiltIn foldrM
 
-checkListArg :: Loc -> Value -> Eval ()
-checkListArg l arg =
-    case arg of
-    List _ -> return ()
-    _      -> throwError $ TypeMismatch l "list" arg
+toNumber :: Loc -> Value -> Eval Value
+toNumber l v@(String s) = case (readMaybe $ T.unpack s :: Maybe Double) of
+  Just n  -> return $ Number n
+  Nothing -> throwError $ NoParse l "number" v
+toNumber l v = throwError $ NoParse l "number" v
 
-checkFnArg :: Loc -> Value -> Eval ()
-checkFnArg l arg =
-    case arg of
-    Lambda _ _ -> return ()
-    BuiltIn _  -> return ()
-    _          -> throwError $ TypeMismatch l "function" arg

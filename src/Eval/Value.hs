@@ -63,6 +63,7 @@ data EvalError
   | VariableNotAList Loc T.Text
   | IndexNotAnInteger Loc Value
   | IndexOutOfRange Loc Integer
+  | NoParse Loc T.Text Value
   | Default Loc T.Text
   deriving (Eq)
 

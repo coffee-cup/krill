@@ -107,6 +107,7 @@ instance Pretty EvalError where
     VariableNotAList l n     -> withLocation l (pp n <+> "is not a list")
     IndexNotAnInteger l v -> withLocation l ("index" <+> pp v <+> "is not an integer")
     IndexOutOfRange l i -> withLocation l ("index" <+> (integer i) <+> "is out of range")
+    NoParse l to v -> withLocation l ("could not parse" <+> pp v <+> "to a" <+> pp to)
     Default l val          -> withLocation l ("Error Evaluation:" <+> pp val)
 
 -- Syntax
@@ -167,7 +168,7 @@ instance Pretty Module where
 -- Runtime Values
 
 instance Pretty Value where
-  ppr p x = case x of
+  ppr _ x = case x of
     Number x   -> ppcond (isInt x) (integer $ round x) (double x)
     Atom x     -> ":" <> pp x
     Char x     -> quotes $ char x
@@ -175,7 +176,7 @@ instance Pretty Value where
     Bool True  -> text "true"
     Bool False -> text "false"
     Lambda _ _ -> text "(lambda)"
-    BuiltIn _  -> text "(builtin)"
+    BuiltIn _  -> text "(lambda)"
     List xs ->
       text "[" <> hsep pxs <> text "]"
       where pxs = punctuate (text ",") $ fmap pp xs
