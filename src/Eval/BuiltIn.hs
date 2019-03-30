@@ -47,8 +47,9 @@ print _ v = do
   return Unit
 
 length :: Loc -> Value -> Eval Value
-length _ (List xs) = return $ Number $ fromIntegral $ Prelude.length xs
-length  l  v       = throwError $ TypeMismatch l "list" v
+length _ (List xs)  = return $ Number $ fromIntegral $ Prelude.length xs
+length _ (String s) = return $ Number $ fromIntegral $ T.length s
+length  l  v        = throwError $ TypeMismatch l "list" v
 
 map :: Loc -> Value -> Eval Value
 map l1 arg1 = do

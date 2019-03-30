@@ -15,6 +15,7 @@ import           Data.Text.Lazy       as T
 import           Eval.Env
 import           Eval.Value
 import           Parser.Syntax
+import           Pretty
 
 type Binary = Expr -> Expr -> Eval Value
 type Unary = Expr -> Eval Value
@@ -35,6 +36,7 @@ binOperators = Map.fromList
   , ("&&", eqBinOp (&&))
   , ("||", eqBinOp (||))
   , ("==", eqCmd)
+  , ("++", concatOp)
   ]
 
 unOperators :: Map.Map T.Text Unary
@@ -131,7 +133,7 @@ evalExpr (EListAcc l eName eIdx) = do
   idx <- evalExpr eIdx
   case idx of
     Number n ->
-      if isInt n then
+      if Eval.Eval.isInt n then
         case mList of
             List xs ->
               if (L.length xs) <= (round n)
@@ -230,6 +232,21 @@ eqUnCmp op e1 = do
   case v1 of
     (Bool x) -> return $ Bool $ op x
     v        -> throwError $ TypeMismatch (loc e1) "Operand to be boolean" v
+
+concatOp :: Expr -> Expr -> Eval Value
+concatOp e1 e2 = do
+  v1 <- evalExpr e1
+  v2 <- evalExpr e2
+  go v1 v2
+  where
+    go :: Value -> Value -> Eval Value
+    go (String x) (String y) = return $ String (x <> y)
+    go (List x) (List y)     = return $ List (x ++ y)
+    go (String x) y          = return $ String (x <> ppg y)
+    go x (String y)          = return $ String (ppg x <> y)
+    go v1 v2
+      = throwError $ Default (loc e1) (T.pack "cannot concat "
+                                       <> ppg v1 <> " and " <> ppg v2)
 
 useEnv :: Env -> Eval ()
 useEnv env = modify (\st -> st { _env = env } )

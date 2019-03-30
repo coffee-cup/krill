@@ -39,9 +39,7 @@ pCharLit = do
 
 pStringLit :: Parser Literal
 pStringLit = do
-  dquote
-  x <- many $ escapedChars <|> noneOf ("\"\\" :: String)
-  dquote
+  x <- lexeme $ char '"' *> manyTill L.charLiteral (char '"')
   return (LitString $ T.pack x) <?> "string"
 
 pBoolLit :: Parser Literal
@@ -95,15 +93,13 @@ br = InfixR . binary
 bl = InfixL . binary
 bn = InfixN . binary
 
-binaryr :: T.Text -> Operator Parser Expr
-binaryr name = InfixR (mkBinary <$> getLoc <*> symbol name <?> "binary operator")
-
 operators :: [[Operator Parser Expr]]
 operators =
   [ [ prefix "-"
     , prefix "!" ]
   , [ bl "*"
     , bl "/" ]
+  , [ bl "++" ]
   , [ bl "+"
     , bl "-" ]
   , [ bn "=="
