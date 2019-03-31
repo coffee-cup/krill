@@ -15,14 +15,33 @@ import           Pretty
 spec :: Spec
 spec = do
   describe "Eval" $ do
-    it "number literal" $ do
-      checkEval ["1"] (Number 1)
+    describe "Literals" $ do
+      it "number literal" $ do
+        checkEval ["1"] (Number 1)
 
-    it "bool literal" $ do
-      checkEval ["true"] (Bool True)
+      it "bool literal" $ do
+        checkEval ["true"] (Bool True)
 
-    it "atom literal" $ do
-      checkEval [":hello"] (Atom "hello")
+      it "atom literal" $ do
+        checkEval [":hello"] (Atom "hello")
+
+    describe "Operators" $ do
+      describe "chain" $ do
+        it "fail without chain" $ do
+          checkError ["length map (x -> x * x) [1,3]"]
+
+        it "chain" $ do
+          checkEval ["length $ map (x -> x * x) [1,3]"] (Number 2)
+
+      describe "concat" $ do
+        it "lists" $ do
+          checkEval ["[1,2] ++ [3,4]"] (List [Number 1, Number 2, Number 3, Number 4])
+
+        it "strings" $ do
+          checkEval ["\"a \" ++ \" b\""] (String "a  b")
+
+        it "string to number" $ do
+          checkEval ["\"a \" ++ 1"] (String "a 1")
 
     it "variable lookup" $ do
       checkEval ["x = 1", "x"] (Number 1)

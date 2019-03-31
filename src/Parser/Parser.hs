@@ -108,7 +108,9 @@ operators =
     , bn "<"
     , bn ">" ]
   , [ br "&&" ]
-  , [ br "||" ] ]
+  , [ br "||" ]
+  , [ br "$" ]
+  ]
 
 pExprLam :: Parser Expr
 pExprLam = do

@@ -37,6 +37,7 @@ binOperators = Map.fromList
   , ("||", eqBinOp (||))
   , ("==", eqCmd)
   , ("++", concatOp)
+  , ("$", chainOp)
   ]
 
 unOperators :: Map.Map T.Text Unary
@@ -144,9 +145,19 @@ evalExpr (EListAcc l eName eIdx) = do
       else throwError $ IndexNotAnInteger l idx
     _ ->
       throwError $ IndexNotAnInteger l mList
-evalExpr (EApp l e1 e2) = do
+evalExpr (EApp _ e1 e2) = do
   fun <- evalExpr e1
   arg <- evalExpr e2
+  evalApp (loc e1) (loc e2) fun arg
+
+evalStmt :: Stmt -> Eval Value
+evalStmt (SExpr _ e) = evalExpr e
+
+evalModule :: Module -> Eval ()
+evalModule (Module stmts) = mapM_ evalStmt stmts
+
+evalApp :: Loc -> Loc -> Value -> Value -> Eval Value
+evalApp lFun lArg fun arg = do
   oldEnv <- gets _env
   case fun of
     Lambda (IFunc fn) env -> do
@@ -155,15 +166,9 @@ evalExpr (EApp l e1 e2) = do
       modify (\st -> st { _env = oldEnv })
       return val
     BuiltIn (BFunc fn) -> do
-      val <- fn (loc e2) arg
+      val <- fn lArg arg
       return val
-    _ -> throwError $ NotFunction l arg
-
-evalStmt :: Stmt -> Eval Value
-evalStmt (SExpr _ e) = evalExpr e
-
-evalModule :: Module -> Eval ()
-evalModule (Module stmts) = mapM_ evalStmt stmts
+    _ -> throwError $ NotFunction lFun arg
 
 numBinOp :: (Double -> Double -> Double) -> Expr -> Expr -> Eval Value
 numBinOp op e1 e2 = do
@@ -247,6 +252,12 @@ concatOp e1 e2 = do
     go v1 v2
       = throwError $ Default (loc e1) (T.pack "cannot concat "
                                        <> ppg v1 <> " and " <> ppg v2)
+
+chainOp :: Expr -> Expr -> Eval Value
+chainOp e1 e2 = do
+  v2 <- evalExpr e2
+  v1 <- evalExpr e1
+  evalApp (loc e1) (loc e2) v1 v2
 
 useEnv :: Env -> Eval ()
 useEnv env = modify (\st -> st { _env = env } )
