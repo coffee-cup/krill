@@ -1,0 +1,9 @@
+reduce = foldl
+
+filter = p -> reduce (acc curr -> {
+  if (p curr) then (acc ++ [curr])
+  else acc
+}) []
+
+sum = reduce (acc curr -> acc + curr) 0
+product = reduce (acc curr -> acc * curr) 1

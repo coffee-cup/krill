@@ -89,6 +89,8 @@ instance Pretty CompilerError where
     ReplCommandError s -> pp s
     ParseError s       -> pp s
     EvaluationError e  -> pp e
+    StdlibError s      -> pp s <+> "standard library"
+    StdlibNotFound p   -> "Could not find standard library " <+> pp p
 
 instance Pretty EvalError where
   ppr _ e = case e of

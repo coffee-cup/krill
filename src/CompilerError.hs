@@ -7,4 +7,6 @@ data CompilerError
   | ReplCommandError String
   | ParseError String
   | EvaluationError EvalError
+  | StdlibNotFound FilePath
+  | StdlibError String
   deriving (Eq)

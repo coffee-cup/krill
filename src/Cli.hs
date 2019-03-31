@@ -48,19 +48,22 @@ runFile cs fname = do
 
   (res, _) <- runCompilerM compileFile cs'
   case res of
-    Left err  -> T.putStrLn $ ppg err
-    Right ast -> return ()
+    Left err -> T.putStrLn $ ppg err
+    Right _  -> return ()
 
 krillEntry :: Options -> IO ()
-krillEntry opts =
-  let
+krillEntry opts = do
+  (cm , cs') <- runCompilerM loadStdlib cs
+  case cm of
+    Right _  -> entry cs'
+    Left err -> T.putStrLn $ ppg err
+  where
     cs = emptyCS { _flags = flags opts }
-  in
-    case lineOpt opts of
-        UseReplLineOpts ->
-          repl cs
-        RunFileLineOpts fname ->
-          runFile cs fname
+    entry cs' = case lineOpt opts of
+      UseReplLineOpts ->
+        repl cs'
+      RunFileLineOpts fname ->
+        runFile cs' fname
 
 cliIFace :: IO ()
 cliIFace = execParser opts >>= krillEntry

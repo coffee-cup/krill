@@ -38,7 +38,7 @@ compileLine = do
     Left e     -> throwError $ EvaluationError e
 
 parseModule :: CompilerM Module
-parseModule  = do
+parseModule = do
   Just fname <- gets _fname
   Just src <- gets _src
   case Parser.Parser.parseModule (T.pack fname) src of
@@ -69,3 +69,21 @@ getFileContents fname = do
       text <- T.readFile fname
       return $ Just text
     else return Nothing
+
+stdlibCore :: FilePath
+stdlibCore = "stdlib/core.kr"
+
+loadStdlib :: CompilerM ()
+loadStdlib = do
+  mCore <- inIO $ getFileContents stdlibCore
+  case mCore of
+    Just core -> case Parser.Parser.parseModule (T.pack stdlibCore) core of
+      Right mod -> do
+        es <- gets _evalS
+        (val, es') <- inIO $ runEval (evalModule mod) es
+        case val of
+          Right _  -> modify (\st -> st { _evalS = es' })
+          Left err -> throwError $ StdlibError "Unable to eval"
+      Left s -> throwError $ StdlibError "Unable to parse"
+    Nothing -> throwError $ StdlibNotFound stdlibCore
+
