@@ -1,3 +1,9 @@
+#
+# Krill Standard Library
+#
+
+# Lists
+
 reduce = foldl
 
 filter = p -> reduce (acc curr -> {
@@ -7,3 +13,16 @@ filter = p -> reduce (acc curr -> {
 
 sum = reduce (acc curr -> acc + curr) 0
 product = reduce (acc curr -> acc * curr) 1
+
+# Strings
+
+lines = split "\n"
+words = xs -> filter (x -> x != "") $ split " " xs
+
+# Math
+
+pow = x n -> {
+  if n == 1 then x
+  else x * (pow x (n - 1))
+}
+

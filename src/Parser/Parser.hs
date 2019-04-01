@@ -104,6 +104,7 @@ operators =
   , [ bl "+"
     , bl "-" ]
   , [ bn "=="
+    , bn "!="
     , bn "<="
     , bn ">="
     , bn "<"
@@ -227,7 +228,11 @@ pModule :: Parser Module
 pModule = Module <$> many pStmt
 
 contents :: Parser a -> Parser a
-contents p = lexeme p <* eof
+contents p = do
+  scn
+  res <- lexeme p
+  eof
+  return res
 
 parseUnpack :: Either (ParseErrorBundle T.Text Void) a -> Either String a
 parseUnpack res = case res of
@@ -248,5 +253,5 @@ parseSimpleString p = parseSimple p . T.pack
 
 runKrillParser :: T.Text -> Parser a -> T.Text -> Either String a
 runKrillParser input p =
-  parseUnpack . runParser (contents p) (T.unpack input) . T.strip
+  parseUnpack . runParser (contents p) (T.unpack input)
 

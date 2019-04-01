@@ -28,6 +28,7 @@ builtIns =
   , ("readFile", mkB Eval.BuiltIn.readFile)
   , ("writeFile", mkB Eval.BuiltIn.writeFile)
   , ("appendFile", mkB Eval.BuiltIn.appendFile)
+  , ("split", mkB Eval.BuiltIn.split)
   ]
 
 mkB :: (Loc -> Value -> Eval Value) -> Value
@@ -160,3 +161,15 @@ appendFile l1 argFname = do
     appendFileFn l (String fname) (String text) = do
       liftIO $ T.appendFile (T.unpack fname) text
       return Unit
+
+split :: Loc -> Value -> Eval Value
+split l1 argDelim = do
+  checkStringArg l1 argDelim
+  return $ BuiltIn $ BFunc (\l2 argText -> do
+                               checkStringArg l2 argText
+                               splitFn l1 argDelim argText)
+  where
+    splitFn :: Loc -> Value -> Value -> Eval Value
+    splitFn l (String delim) (String text) = do
+      let xs = T.splitOn delim text
+      return $ List (fmap String xs)

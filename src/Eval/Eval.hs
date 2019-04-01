@@ -38,6 +38,7 @@ binOperators = Map.fromList
   , ("&&", eqBinOp (&&))
   , ("||", eqBinOp (||))
   , ("==", eqCmd)
+  , ("!=", notEqCmd)
   , ("++", concatOp)
   , ("$", chainOp)
   ]
@@ -225,6 +226,11 @@ eqCmd e1 e2 = do
     go _ _                   = False
     goZipped :: (Value, Value) -> Bool
     goZipped (x, y) = go x y
+
+notEqCmd :: Expr -> Expr -> Eval Value
+notEqCmd e1 e2 = do
+  (Bool val) <- eqCmd e1 e2
+  return $ Bool $ not val
 
 numUnOp :: (Double -> Double) -> Expr -> Eval Value
 numUnOp op e1 = do
