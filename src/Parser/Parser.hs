@@ -98,7 +98,8 @@ operators =
   [ [ prefix "-"
     , prefix "!" ]
   , [ bl "*"
-    , bl "/" ]
+    , bl "/"
+    , bl "%" ]
   , [ bl "++" ]
   , [ bl "+"
     , bl "-" ]

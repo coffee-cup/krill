@@ -8,6 +8,7 @@ module Eval.Eval where
 
 import           Control.Monad.Except
 import           Control.Monad.State
+import           Data.Fixed
 import           Data.List            as L
 import qualified Data.Map             as Map
 import           Data.Text.Lazy       as T
@@ -28,6 +29,7 @@ binOperators = Map.fromList
   [ ("+", numBinOp (+))
   , ("*", numBinOp (*))
   , ("/", numBinOp (/))
+  , ("%", numBinOp mod')
   , ("-", numBinOp (-))
   , ("<", numBinCmp (<))
   , (">", numBinCmp (>))
