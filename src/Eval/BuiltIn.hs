@@ -9,6 +9,7 @@ import           Control.Monad.State
 import           Data.Foldable
 import           Data.Text.Lazy       as T
 import           Data.Text.Lazy.IO    as T
+import           System.Directory
 import           Text.Read            hiding (Number, String)
 
 import           Eval.Value
@@ -24,6 +25,9 @@ builtIns =
   , ("foldr", mkB Eval.BuiltIn.foldr)
   , ("toNumber", mkB Eval.BuiltIn.toNumber)
   , ("toString", mkB Eval.BuiltIn.toString)
+  , ("readFile", mkB Eval.BuiltIn.readFile)
+  , ("writeFile", mkB Eval.BuiltIn.writeFile)
+  , ("appendFile", mkB Eval.BuiltIn.appendFile)
   ]
 
 mkB :: (Loc -> Value -> Eval Value) -> Value
@@ -124,3 +128,35 @@ toNumber l v = throwError $ NoParse l "number" v
 toString :: Loc -> Value -> Eval Value
 toString _ v = return $ String $ ppg v
 
+readFile :: Loc -> Value -> Eval Value
+readFile l (String fname) = do
+  exists <- liftIO $ doesFileExist $ T.unpack fname
+  if exists then do
+    text <- liftIO $ T.readFile $ T.unpack fname
+    return $ String text
+  else throwError $ FileNotFound l fname
+readFile l v = throwError $ TypeMismatch l "string" v
+
+writeFile :: Loc -> Value -> Eval Value
+writeFile l1 argFname = do
+  checkStringArg l1 argFname
+  return $ BuiltIn $ BFunc (\l2 argText -> do
+                               checkStringArg l2 argText
+                               writeFileFn l1 argFname argText)
+  where
+    writeFileFn :: Loc -> Value -> Value -> Eval Value
+    writeFileFn l (String fname) (String text) = do
+      liftIO $ T.writeFile (T.unpack fname) text
+      return Unit
+
+appendFile :: Loc -> Value -> Eval Value
+appendFile l1 argFname = do
+  checkStringArg l1 argFname
+  return $ BuiltIn $ BFunc (\l2 argText -> do
+                               checkStringArg l2 argText
+                               appendFileFn l1 argFname argText)
+  where
+    appendFileFn :: Loc -> Value -> Value -> Eval Value
+    appendFileFn l (String fname) (String text) = do
+      liftIO $ T.appendFile (T.unpack fname) text
+      return Unit

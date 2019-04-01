@@ -64,6 +64,7 @@ data EvalError
   | IndexNotAnInteger Loc Value
   | IndexOutOfRange Loc Integer
   | NoParse Loc T.Text Value
+  | FileNotFound Loc T.Text
   | Default Loc T.Text
   deriving (Eq)
 

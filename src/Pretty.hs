@@ -85,7 +85,7 @@ withLocation (Located pos) d =
 
 instance Pretty CompilerError where
   ppr _ e = case e of
-    FileNotFound fname -> "File:" <+> pp fname <+> "not found"
+    CompilerError.FileNotFound fname -> "File:" <+> pp fname <+> "not found"
     ReplCommandError s -> pp s
     ParseError s       -> pp s
     EvaluationError e  -> pp e
@@ -94,23 +94,36 @@ instance Pretty CompilerError where
 
 instance Pretty EvalError where
   ppr _ e = case e of
-    TypeMismatch l txt val -> withLocation l ("Type Mismatch.\n\tExpected:"
-                                              <+> pp txt <+> "\n\tReceived:" <+> pp val)
-    UnboundVar l txt       -> withLocation l ("Error Unbound Variable:" <+> pp txt)
+    TypeMismatch l txt val ->
+      withLocation l ("Error: Type Mismatch\n  Expected:"
+                      <+> pp txt <+> "\n  Received:" <+> pp val)
+    UnboundVar l txt ->
+      withLocation l ("Error: Unbound Variable" <+> pp txt)
     NumArgs l expected received ->
-      withLocation l ("Error Number of Arguments, expected:"
+      withLocation l ("Error: Number of Arguments, expected:"
                       <+> integer expected
                       <+> "recieved:"
                       <+> integer received)
-    NotFunction l val      -> withLocation l ("Error Not a Function:" <+> pp val)
-    NotList l val -> withLocation l ("Error Not a List:" <+> pp val)
-    OperatorNotFound l n   -> withLocation l ("Error Operator `" <> pp n <> "` Not Found")
-    VariableAlreadyBound l n -> withLocation l ("Error Variable `" <> pp n <> "` Already Bound")
-    VariableNotAList l n     -> withLocation l (pp n <+> "is not a list")
-    IndexNotAnInteger l v -> withLocation l ("index" <+> pp v <+> "is not an integer")
-    IndexOutOfRange l i -> withLocation l ("index" <+> (integer i) <+> "is out of range")
-    NoParse l to v -> withLocation l ("could not parse" <+> pp v <+> "to a" <+> pp to)
-    Default l val          -> withLocation l ("Error Evaluation:" <+> pp val)
+    NotFunction l val ->
+      withLocation l ("Error: Not a Function:" <+> pp val)
+    NotList l val ->
+      withLocation l ("Error: Not a List:" <+> pp val)
+    OperatorNotFound l n ->
+      withLocation l ("Error: Operator `" <> pp n <> "` Not Found")
+    VariableAlreadyBound l n ->
+      withLocation l ("Error: Variable `" <> pp n <> "` Already Bound")
+    VariableNotAList l n ->
+      withLocation l ("Error:" <+> pp n <+> "is not a list")
+    IndexNotAnInteger l v ->
+      withLocation l ("Error: Index" <+> pp v <+> "is not an integer")
+    IndexOutOfRange l i ->
+      withLocation l ("Error: Index" <+> (integer i) <+> "is out of range")
+    NoParse l to v ->
+      withLocation l ("Error: Could not parse" <+> pp v <+> "to a" <+> pp to)
+    Eval.Value.FileNotFound l fname ->
+      withLocation l ("Error: File" <+> pp fname <+> "not found")
+    Default l val ->
+      withLocation l ("Error Evaluation:" <+> pp val)
 
 -- Syntax
 
