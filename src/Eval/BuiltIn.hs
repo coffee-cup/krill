@@ -23,6 +23,7 @@ builtIns =
   , ("foldl", mkB Eval.BuiltIn.foldl)
   , ("foldr", mkB Eval.BuiltIn.foldr)
   , ("toNumber", mkB Eval.BuiltIn.toNumber)
+  , ("toString", mkB Eval.BuiltIn.toString)
   ]
 
 mkB :: (Loc -> Value -> Eval Value) -> Value
@@ -119,4 +120,7 @@ toNumber l v@(String s) = case (readMaybe $ T.unpack s :: Maybe Double) of
   Just n  -> return $ Number n
   Nothing -> throwError $ NoParse l "number" v
 toNumber l v = throwError $ NoParse l "number" v
+
+toString :: Loc -> Value -> Eval Value
+toString _ v = return $ String $ ppg v
 
