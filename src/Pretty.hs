@@ -3,6 +3,7 @@
 {-# LANGUAGE OverloadedStrings    #-}
 {-# LANGUAGE RecordWildCards      #-}
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Pretty where
 
@@ -205,5 +206,5 @@ instance Pretty Env where
     where
       ppscope :: Map.Map T.Text Value -> Doc
       ppscope s =
-        (vcat $ fmap (\(k, v) -> pp k <+> "->" <+> pp v) (Map.toList s)) <> "\n~\n"
+        (vcat $ fmap (\(k, v) -> pp k <+> "->" <+> pp v) (Map.toList s))
 

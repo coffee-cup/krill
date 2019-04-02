@@ -79,3 +79,40 @@ instance Location EvalError where
 
 runEval :: Eval a -> EvalState -> IO (Either EvalError a, EvalState)
 runEval = runStateT . runExceptT . unEval
+
+enterScope :: Env -> Env
+enterScope xs = Map.empty : xs
+
+endScope :: Env -> Env
+endScope (_:xs) = xs
+endScope []     = []
+
+inInnerScope :: Name -> Env -> Bool
+inInnerScope n (x:_) = Map.member n x
+inInnerScope _ []    = False
+
+getValue :: Name -> Env -> Maybe Value
+getValue n (x:xs) =
+  case Map.lookup n x of
+    Just r  -> Just r
+    Nothing -> getValue n xs
+getValue _ [] = Nothing
+
+setValue :: Name -> Value -> Env -> Env
+setValue n v (x:xs) = Map.insert n v x : xs
+setValue _ _ []     = error "inserting into empty scope"
+
+mergeEnvs :: Env -> Env -> Env
+mergeEnvs (x:xs) (y:ys) = Map.union x y : mergeEnvs xs ys
+mergeEnvs (x:xs) []     = x : mergeEnvs xs []
+mergeEnvs [] (y:ys)     = y : mergeEnvs [] ys
+mergeEnvs [] []         = []
+
+evalInEnv :: Eval a -> Env -> Eval a
+evalInEnv eval env = do
+  oldEnv <- gets _env
+  let newEnv = mergeEnvs env oldEnv
+  modify (\st -> st { _env = newEnv })
+  res <- eval
+  modify (\st -> st { _env = oldEnv })
+  return res

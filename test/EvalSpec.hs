@@ -5,7 +5,6 @@ module EvalSpec (spec) where
 import qualified Data.Text.Lazy as T
 import           Test.Hspec
 
-import           Eval.Env
 import           Eval.Eval
 import           Eval.Value
 import           Parser.Parser

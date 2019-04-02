@@ -9,7 +9,7 @@ import           Control.Monad.State
 import qualified Data.Text.Lazy       as L
 
 import           CompilerError
-import           Eval.Env
+import           Eval.Eval
 import           Eval.Value
 import qualified Flags
 import           Parser.Syntax

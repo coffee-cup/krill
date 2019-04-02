@@ -84,6 +84,6 @@ loadStdlib = do
         case val of
           Right _  -> modify (\st -> st { _evalS = es' })
           Left err -> throwError $ StdlibError "Unable to eval"
-      Left s -> throwError $ StdlibError "Unable to parse"
+      Left s -> throwError $ StdlibError s
     Nothing -> throwError $ StdlibNotFound stdlibCore
 

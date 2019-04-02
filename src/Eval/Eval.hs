@@ -14,13 +14,15 @@ import qualified Data.Map             as Map
 import           Data.Text.Lazy       as T
 
 import           Eval.BuiltIn
-import           Eval.Env
 import           Eval.Value
 import           Parser.Syntax
 import           Pretty
 
 type Binary = Expr -> Expr -> Eval Value
 type Unary = Expr -> Eval Value
+
+basicState :: EvalState
+basicState = EvalState [Map.fromList builtIns]
 
 isInt :: RealFrac a => a -> Bool
 isInt x = x == fromInteger (round x)
@@ -76,8 +78,8 @@ buildLamFunc b (x:xs) = do
     curriedFunc :: Value -> Eval Value
     curriedFunc val = do
       env' <- gets _env
-      let newScope = enterScope env'
-      useEnv (setValue x val newScope)
+      let newEnv = enterScope env'
+      useEnv (setValue x val newEnv)
       buildLamFunc b xs
 
 evalExpr :: Expr -> Eval Value
@@ -122,15 +124,8 @@ evalExpr (EAss l n e) = do
   then throwError $ VariableAlreadyBound l n
   else do
     val <- evalExpr e
-    case val of
-      Lambda func lEnv -> do
-        -- modify environment to allow recursive functions
-        let newVal = Lambda func (setValue n newVal lEnv)
-        modify (\st -> st { _env = setValue n newVal env })
-        return val
-      _ -> do
-        modify (\st -> st { _env = setValue n val env })
-        return val
+    modify (\st -> st { _env = setValue n val env })
+    return val
 evalExpr (EList _ xs) = do
   vs <- mapM evalExpr xs
   return $ List vs
@@ -163,13 +158,9 @@ evalModule (Module stmts) = mapM_ evalStmt stmts
 
 evalApp :: Loc -> Loc -> Value -> Value -> Eval Value
 evalApp lFun lArg fun arg = do
-  oldEnv <- gets _env
   case fun of
     Lambda (IFunc fn) env -> do
-      modify (\st -> st { _env = env })
-      val <- fn arg
-      modify (\st -> st { _env = oldEnv })
-      return val
+      evalInEnv (fn arg) env
     BuiltIn (BFunc fn) -> do
       val <- fn lArg arg
       return val
@@ -285,4 +276,3 @@ composeOp e1 e2 = do
 
 useEnv :: Env -> Eval ()
 useEnv env = modify (\st -> st { _env = env } )
-

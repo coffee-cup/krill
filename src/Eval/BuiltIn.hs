@@ -29,6 +29,9 @@ builtIns =
   , ("writeFile", mkB Eval.BuiltIn.writeFile)
   , ("appendFile", mkB Eval.BuiltIn.appendFile)
   , ("split", mkB Eval.BuiltIn.split)
+  , ("isList", mkB Eval.BuiltIn.isList)
+  , ("isNumber", mkB Eval.BuiltIn.isNumber)
+  , ("isString", mkB Eval.BuiltIn.isString)
   ]
 
 mkB :: (Loc -> Value -> Eval Value) -> Value
@@ -59,6 +62,7 @@ length  l  v        = throwError $ TypeMismatch l "list" v
 
 map :: Loc -> Value -> Eval Value
 map l1 arg1 = do
+  oldEnv <- gets _env
   checkFnArg l1 arg1
   return $ BuiltIn $ BFunc (\l2 arg2 -> do
                                checkListArg l2 arg2
@@ -66,10 +70,7 @@ map l1 arg1 = do
   where
     evalMap :: Loc -> Value -> Value -> Eval Value
     evalMap _ (Lambda (IFunc fn) env) (List xs) = do
-        oldEnv <- gets _env
-        modify (\st -> st { _env = env })
-        ys <- mapM fn xs
-        modify (\st -> st { _env = oldEnv })
+        ys <- evalInEnv (mapM fn xs) env
         return $ List ys
     evalMap l (BuiltIn (BFunc fn)) (List xs) = do
         ys <- mapM (fn l) xs
@@ -94,22 +95,13 @@ foldBuiltIn foldFnM l1 argFn = do
     foldFn fn1 acc curr = do
       accApplied <- fn1 acc
       case accApplied of
-        Lambda (IFunc fn2) env2 -> do
-          oldEnv <- gets _env
-          modify (\st -> st { _env = env2 })
-          next <- fn2 curr
-          modify (\st -> st { _env = oldEnv })
-          return next
-        BuiltIn (BFunc fn2) -> fn2 l1 curr
+        Lambda (IFunc fn2) env2 -> evalInEnv (fn2 curr) env2
+        BuiltIn (BFunc fn2)     -> fn2 l1 curr
         _                       -> throwError $ NumArgs l1 2 1
 
     evalFold :: Value -> Value -> Value -> Eval Value
-    evalFold lam@(Lambda (IFunc fn) env) init (List xs) = do
-      oldEnv <- gets _env
-      modify (\st -> st { _env = env })
-      res <- foldFnM (foldFn fn) init xs
-      modify (\st -> st { _env = oldEnv })
-      return res
+    evalFold lam@(Lambda (IFunc fn) env) init (List xs) =
+      evalInEnv (foldFnM (foldFn fn) init xs) env
     evalFold bi@(BuiltIn (BFunc fn)) init (List xs) = do
       res <- foldlM (foldFn (fn l1)) init xs
       return res
@@ -173,3 +165,15 @@ split l1 argDelim = do
     splitFn l (String delim) (String text) = do
       let xs = T.splitOn delim text
       return $ List (fmap String xs)
+
+isString :: Loc -> Value -> Eval Value
+isString _ (String _) = return $ Bool True
+isString _ _          = return $ Bool False
+
+isNumber :: Loc -> Value -> Eval Value
+isNumber _ (Number _) = return $ Bool True
+isNumber _ _          = return $ Bool False
+
+isList :: Loc -> Value -> Eval Value
+isList _ (List _) = return $ Bool True
+isList _ _        = return $ Bool False
