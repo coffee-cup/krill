@@ -3,12 +3,13 @@
 
 module Eval.BuiltIn where
 
-import           Control.Monad
 import           Control.Monad.Except
-import           Control.Monad.State
 import           Data.Foldable
 import           Data.Text.Lazy       as T
 import           Data.Text.Lazy.IO    as T
+import           Data.Time.Calendar
+import           Data.Time.Clock
+import           Data.Time.LocalTime
 import           System.Directory
 import           Text.Read            hiding (Number, String)
 
@@ -32,6 +33,10 @@ builtIns =
   , ("isList", mkB Eval.BuiltIn.isList)
   , ("isNumber", mkB Eval.BuiltIn.isNumber)
   , ("isString", mkB Eval.BuiltIn.isString)
+  , ("isBool", mkB Eval.BuiltIn.isBool)
+  , ("date", mkB Eval.BuiltIn.date)
+  , ("time", mkB Eval.BuiltIn.time)
+  , ("throwError", mkB Eval.BuiltIn.throw)
   ]
 
 mkB :: (Loc -> Value -> Eval Value) -> Value
@@ -65,7 +70,6 @@ length  l  v        = throwError $ TypeMismatch l "list" v
 
 map :: Loc -> Value -> Eval Value
 map l1 arg1 = do
-  oldEnv <- gets _env
   checkFnArg l1 arg1
   return $ BuiltIn $ BFunc (\l2 arg2 -> do
                                checkListArg l2 arg2
@@ -78,7 +82,6 @@ map l1 arg1 = do
     evalMap l (BuiltIn (BFunc fn)) (List xs) = do
         ys <- mapM (fn l) xs
         return $ List ys
-    evalMap l _ _ = throwError $ Default l "evalMap fall through"
 
 foldBuiltIn ::
   ((Value -> Value -> Eval Value) -> Value -> [Value] -> Eval Value)
@@ -181,3 +184,26 @@ isNumber _ _          = return $ Bool False
 isList :: Loc -> Value -> Eval Value
 isList _ (List _) = return $ Bool True
 isList _ _        = return $ Bool False
+
+isBool :: Loc -> Value -> Eval Value
+isBool _ (Bool _) = return $ Bool True
+isBool _ _        = return $ Bool False
+
+date :: Loc -> Value -> Eval Value
+date _ _ = do
+  now <- liftIO getCurrentTime
+  timezone <- liftIO getCurrentTimeZone
+  let zoneNow = utcToLocalTime timezone now
+  let (year, month, day) = toGregorian $ localDay zoneNow
+  return $ String $ T.pack $ (show year) ++ "-" ++ (show month) ++ "-" ++ (show day)
+
+time :: Loc -> Value -> Eval Value
+time _ _ = do
+  now <- liftIO getCurrentTime
+  timezone <- liftIO getCurrentTimeZone
+  let (TimeOfDay hour minute _) = localTimeOfDay $ utcToLocalTime timezone now
+  return $ String $ T.pack $ (show hour) ++ ":" ++ (show minute)
+
+throw :: Loc -> Value -> Eval Value
+throw l (String s) = throwError $ ThrowError l s
+throw l v          = throwError $ ThrowError l (ppg v)

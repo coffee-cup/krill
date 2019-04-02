@@ -4,7 +4,16 @@
 
 # Functions
 
+id = x -> x
+const x y -> x
+
 compose = f g -> f . g
+
+assert = expected received -> {
+  if expected != received then {
+    throwError $ (toString expected) ++ " does not equal " ++ (toString received)
+  } else ()
+}
 
 # Lists
 

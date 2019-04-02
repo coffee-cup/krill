@@ -123,6 +123,8 @@ instance Pretty EvalError where
       withLocation l ("Error: Could not parse" <+> pp v <+> "to a" <+> pp to)
     Eval.Value.FileNotFound l fname ->
       withLocation l ("Error: File" <+> pp fname <+> "not found")
+    ThrowError l s ->
+      withLocation l ("Error:" <+> pp s)
     Default l val ->
       withLocation l ("Error Evaluation:" <+> pp val)
 
