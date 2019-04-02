@@ -162,7 +162,7 @@ evalApp lFun lArg fun arg = do
     Lambda (IFunc fn) env -> do
       evalInEnv (fn arg) env
     BuiltIn (BFunc fn) -> do
-      val <- fn lArg arg
+      val <- fn lFun arg
       return val
     _ -> throwError $ NotFunction lFun arg
 

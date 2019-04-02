@@ -1,0 +1,49 @@
+x = 1
+
+foo = a -> {
+   x = 4
+   assert x 4
+
+   x
+}
+
+assert (foo ()) 4
+assert x 1
+
+# lists
+
+assert (length []) 0
+assert (length [1,2,3]) 3
+assert (length [1]) 1
+
+square = x -> x * x
+assert (map square [1,2,3]) [1,4,9]
+
+assert (sum [1,2,3]) 6
+assert (foldl (acc curr -> acc - curr) 0 [1,2,3]) (-6)
+assert (foldr (acc curr -> acc - curr) 0 [1,2,3]) 2
+
+# to conversions
+
+assert (toString 3) "3"
+assert (toNumber "100") 100
+assert ((toString . toNumber) "100") "100"
+
+# is checks
+
+assert (isList []) true
+assert (isNumber 0) true
+assert (isString "") true
+assert (isBool true) true
+
+assert (isList 0) false
+assert (isNumber []) false
+assert (isString 0) false
+assert (isBool 0) false
+
+# misc
+
+assert (isString $ date ()) true
+assert (isString $ time ()) true
+
+print $ "k1 tests passed"

@@ -37,6 +37,7 @@ builtIns =
   , ("date", mkB Eval.BuiltIn.date)
   , ("time", mkB Eval.BuiltIn.time)
   , ("throwError", mkB Eval.BuiltIn.throw)
+  , ("assert", mkB Eval.BuiltIn.assert)
   ]
 
 mkB :: (Loc -> Value -> Eval Value) -> Value
@@ -207,3 +208,15 @@ time _ _ = do
 throw :: Loc -> Value -> Eval Value
 throw l (String s) = throwError $ ThrowError l s
 throw l v          = throwError $ ThrowError l (ppg v)
+
+assert :: Loc -> Value -> Eval Value
+assert l1 arg1 = do
+  return $ BuiltIn $ BFunc (\l2 arg2 -> assertFn l1 l2 arg1 arg2)
+  where
+    assertFn :: Loc -> Loc -> Value -> Value -> Eval Value
+    assertFn l1 l2 arg1 arg2 = do
+      (String s1) <- toString l1 arg1
+      (String s2) <- toString l2 arg2
+      if arg1 == arg2
+      then return $ Unit
+      else throwError $ ThrowError l1 $ s1 <> " does not equal " <> s2
