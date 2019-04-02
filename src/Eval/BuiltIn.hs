@@ -51,6 +51,9 @@ checkStringArg _ (String _) = return ()
 checkStringArg l arg        =  throwError $ TypeMismatch l "string" arg
 
 print :: Loc -> Value -> Eval Value
+print _ (String s) = do
+  liftIO $ T.putStrLn s
+  return Unit
 print _ v = do
   liftIO $ T.putStrLn $ ppg v
   return Unit
@@ -119,7 +122,8 @@ toNumber l v@(String s) = case (readMaybe $ T.unpack s :: Maybe Double) of
 toNumber l v = throwError $ NoParse l "number" v
 
 toString :: Loc -> Value -> Eval Value
-toString _ v = return $ String $ ppg v
+toString _ v@(String _) = return v
+toString _ v            = return $ String $ ppg v
 
 readFile :: Loc -> Value -> Eval Value
 readFile l (String fname) = do
