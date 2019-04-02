@@ -95,7 +95,8 @@ bn = InfixN . binary
 
 operators :: [[Operator Parser Expr]]
 operators =
-  [ [ prefix "-"
+  [ [ br "." ]
+  , [ prefix "-"
     , prefix "!" ]
   , [ bl "*"
     , bl "/"

@@ -2,6 +2,10 @@
 # Krill Standard Library
 #
 
+# Functions
+
+compose = f g -> f . g
+
 # Lists
 
 reduce = foldl

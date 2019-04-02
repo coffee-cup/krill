@@ -13,6 +13,7 @@ import           Data.List            as L
 import qualified Data.Map             as Map
 import           Data.Text.Lazy       as T
 
+import           Eval.BuiltIn
 import           Eval.Env
 import           Eval.Value
 import           Parser.Syntax
@@ -41,6 +42,7 @@ binOperators = Map.fromList
   , ("!=", notEqCmd)
   , ("++", concatOp)
   , ("$", chainOp)
+  , (".", composeOp)
   ]
 
 unOperators :: Map.Map T.Text Unary
@@ -266,6 +268,20 @@ chainOp e1 e2 = do
   v2 <- evalExpr e2
   v1 <- evalExpr e1
   evalApp (loc e1) (loc e2) v1 v2
+
+composeOp :: Expr -> Expr -> Eval Value
+composeOp e1 e2 = do
+  v1 <- evalExpr e1
+  v2 <- evalExpr e2
+  checkFnArg (loc e1) v1
+  checkFnArg (loc e2) v2
+  return $ BuiltIn (BFunc (fn v1 v2))
+  where
+    fn :: Value -> Value -> Loc -> Value -> Eval Value
+    fn v1 v2 l arg = do
+      res1 <- evalApp (loc e2) l v2 arg
+      res2 <- evalApp (loc e1) l v1 res1
+      return res2
 
 useEnv :: Env -> Eval ()
 useEnv env = modify (\st -> st { _env = env } )
