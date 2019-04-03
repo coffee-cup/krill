@@ -23,7 +23,7 @@ instance Show Flags where
 
 emptyFlags :: Flags
 emptyFlags = Flags
-  { dumpAst = True
+  { dumpAst = False
   }
 
 parseFlags :: Parser Flags
