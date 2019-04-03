@@ -103,6 +103,10 @@ setValue :: Name -> Value -> Env -> Env
 setValue n v (x:xs) = Map.insert n v x : xs
 setValue _ _ []     = error "inserting into empty scope"
 
+clearValue :: Name -> Env -> Env
+clearValue n (x:xs) = Map.delete n x : clearValue n xs
+clearValue _ xs     = xs
+
 mergeEnvs :: Env -> Env -> Env
 mergeEnvs (x:xs) (y:ys) = Map.union x y : mergeEnvs xs ys
 mergeEnvs (x:xs) []     = x : mergeEnvs xs []

@@ -38,6 +38,7 @@ builtIns =
   , ("time", mkB Eval.BuiltIn.time)
   , ("throwError", mkB Eval.BuiltIn.throw)
   , ("assert", mkB Eval.BuiltIn.assert)
+  , ("root", mkB Eval.BuiltIn.root)
   ]
 
 mkB :: (Loc -> Value -> Eval Value) -> Value
@@ -55,6 +56,10 @@ checkFnArg l arg          = throwError $ TypeMismatch l "function" arg
 checkStringArg :: Loc -> Value -> Eval ()
 checkStringArg _ (String _) = return ()
 checkStringArg l arg        =  throwError $ TypeMismatch l "string" arg
+
+checkNumArg :: Loc -> Value -> Eval ()
+checkNumArg _ (Number _) = return ()
+checkNumArg l arg        = throwError $ TypeMismatch l "number" arg
 
 print :: Loc -> Value -> Eval Value
 print _ (String s) = do
@@ -220,3 +225,18 @@ assert l1 arg1 = do
       if arg1 == arg2
       then return $ Unit
       else throwError $ ThrowError l1 $ s1 <> " does not equal " <> s2
+
+nthRoot :: (Eq b, Floating b) => b -> b -> b
+n `nthRoot` x = fst $ until (uncurry(==)) (\(_,x0) -> (x0,((n-1)*x0+x/x0**(n-1))/n)) (x,x/n)
+
+root :: Loc -> Value -> Eval Value
+root l1 argRoot = do
+  checkNumArg l1 argRoot
+  return $ BuiltIn $ BFunc (\l2 argNum -> do
+                               checkNumArg l2 argNum
+                               rootFn argRoot argNum)
+  where
+    rootFn :: Value -> Value -> Eval Value
+    rootFn (Number root) (Number n) = return $ Number $ root `nthRoot` n
+
+

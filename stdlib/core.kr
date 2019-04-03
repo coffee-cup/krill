@@ -38,3 +38,4 @@ pow = x n -> {
   else x * (pow x (n - 1))
 }
 
+sqrt = root 2
