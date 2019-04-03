@@ -106,6 +106,16 @@ env _ = do
   env <- (_env . _evalS) <$> gets _compilerState
   showMsg $ T.unpack $ ppg env
 
+clear :: [String] -> Repl ()
+clear [] = showError "clear requires a parameter name"
+clear (n:[]) = do
+  cs <- gets _compilerState
+  let es = _evalS cs
+  let env = _env es
+  let newEnv = clearValue (T.pack n) env
+  let cs' = cs { _evalS = es { _env = newEnv } }
+  updateCompilerState cs'
+
 help :: a -> Repl ()
 help _ = showMsg "Commands available \n\
 \  .set FLAG \t sets a compiler flag \n\
@@ -136,6 +146,7 @@ comp n = do
         , ".quit"
         , ".help"
         , ".env"
+        , ".clear"
         ]
   return $ filter (isPrefixOf n) cmds
 
@@ -151,6 +162,7 @@ options =
   , ("help", help)
   , ("quit", quit)
   , ("env", env)
+  , ("clear", clear)
   ]
 
 -- Entry Point
