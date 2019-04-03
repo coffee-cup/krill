@@ -1,3 +1,5 @@
+# Scopes
+
 x = 1
 
 foo = a -> {
@@ -47,3 +49,6 @@ assert (isString $ date ()) true
 assert (isString $ time ()) true
 
 print $ "k1 tests passed"
+
+# Stdlib
+
