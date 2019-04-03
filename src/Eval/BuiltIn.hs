@@ -39,6 +39,10 @@ builtIns =
   , ("throwError", mkB Eval.BuiltIn.throw)
   , ("assert", mkB Eval.BuiltIn.assert)
   , ("root", mkB Eval.BuiltIn.root)
+  , ("floor", mkB Eval.BuiltIn.floor)
+  , ("ceil", mkB Eval.BuiltIn.ceil)
+  , ("sin", mkB Eval.BuiltIn.sin)
+  , ("cos", mkB Eval.BuiltIn.cos)
   ]
 
 mkB :: (Loc -> Value -> Eval Value) -> Value
@@ -239,4 +243,18 @@ root l1 argRoot = do
     rootFn :: Value -> Value -> Eval Value
     rootFn (Number root) (Number n) = return $ Number $ root `nthRoot` n
 
+floor :: Loc -> Value -> Eval Value
+floor _ (Number n) = return $ Number $ fromIntegral $ Prelude.floor n
+floor l v          = throwError $ TypeMismatch l "number" v
 
+ceil :: Loc -> Value -> Eval Value
+ceil _ (Number n) = return $ Number $ fromIntegral $ Prelude.ceiling n
+ceil l v          = throwError $ TypeMismatch l "number" v
+
+sin :: Loc -> Value -> Eval Value
+sin _ (Number n) = return $ Number $ Prelude.sin n
+sin l v          = throwError $ TypeMismatch l "number" v
+
+cos :: Loc -> Value -> Eval Value
+cos _ (Number n) = return $ Number $ Prelude.cos n
+cos l v          = throwError $ TypeMismatch l "number" v
