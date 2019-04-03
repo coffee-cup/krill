@@ -86,7 +86,8 @@ withLocation (Located pos) d =
 
 instance Pretty CompilerError where
   ppr _ e = case e of
-    CompilerError.FileNotFound fname -> "File:" <+> pp fname <+> "not found"
+    CompilerError.FileNotFound fname ->
+      "File" <+> pp fname <+> "not found"
     ReplCommandError s -> pp s
     ParseError s       -> pp s
     EvaluationError e  -> pp e

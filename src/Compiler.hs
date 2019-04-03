@@ -17,13 +17,20 @@ import           Pretty
 
 compileFile :: CompilerM ()
 compileFile = do
-  mod <- Compiler.parseModule
-  es <- gets _evalS
-  (val, es') <- inIO $ runEval (evalModule mod) es
-  case val of
-    Right val' -> do
-      modify (\st -> st { _evalS = es' })
-    Left e     -> throwError $ EvaluationError e
+  msrc <- gets _src
+  Just fname <- gets _fname
+  case msrc of
+    Just _  -> go
+    Nothing -> throwError $ CompilerError.FileNotFound fname
+  where
+    go = do
+      mod <- Compiler.parseModule
+      es <- gets _evalS
+      (val, es') <- inIO $ runEval (evalModule mod) es
+      case val of
+        Right val' -> do
+          modify (\st -> st { _evalS = es' })
+        Left e     -> throwError $ EvaluationError e
 
 compileLine :: CompilerM ()
 compileLine = do
@@ -86,4 +93,3 @@ loadStdlib = do
           Left err -> throwError $ StdlibError "Unable to eval"
       Left s -> throwError $ StdlibError s
     Nothing -> throwError $ StdlibNotFound stdlibCore
-

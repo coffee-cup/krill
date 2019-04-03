@@ -31,15 +31,15 @@ parseRepl :: Parser LineOpts
 parseRepl = pure UseReplLineOpts
 
 parseFile :: Parser LineOpts
-parseFile = RunFileLineOpts <$> argument str (metavar "FILE")
+parseFile = RunFileLineOpts
+  <$> argument str (metavar "file?" <> help "File to run. Start repl if not file provided.")
 
 parseLineOpts :: Parser LineOpts
-parseLineOpts = subparser $
-  command "repl" (parseRepl `withInfo` "Load repl") <>
-  command "run" (parseFile `withInfo` "Run file")
+parseLineOpts = parseFile <|> parseRepl
 
 parseOptions :: Parser Options
-parseOptions = Options <$> parseLineOpts <*> parseFlags
+-- parseOptions = Options <$> parseLineOpts <*> parseFlags
+parseOptions = Options <$> parseLineOpts <*> pure emptyFlags
 
 runFile :: CompilerState -> FilePath -> IO ()
 runFile cs fname = do
@@ -66,8 +66,9 @@ krillEntry opts = do
         runFile cs' fname
 
 cliIFace :: IO ()
-cliIFace = execParser opts >>= krillEntry
+cliIFace = customExecParser p opts >>= krillEntry
   where
+    p  = prefs showHelpOnEmpty
     opts = info (helper <*> parseOptions)
       (  fullDesc
       <> header "The Krill Language"
