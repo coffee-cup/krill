@@ -49,6 +49,9 @@ builtIns =
 mkB :: (Loc -> Value -> Eval Value) -> Value
 mkB fn = BuiltIn $ BFunc fn
 
+chain :: (Loc -> Value -> Eval Value) -> Eval Value
+chain = return . mkB
+
 checkListArg :: Loc -> Value -> Eval ()
 checkListArg _ (List _) = return ()
 checkListArg l arg      = throwError $ TypeMismatch l "list" arg
@@ -82,9 +85,9 @@ length  l  v        = throwError $ TypeMismatch l "list" v
 map :: Loc -> Value -> Eval Value
 map l1 arg1 = do
   checkFnArg l1 arg1
-  return $ BuiltIn $ BFunc (\l2 arg2 -> do
-                               checkListArg l2 arg2
-                               evalMap l2 arg1 arg2)
+  chain (\l2 arg2 -> do
+            checkListArg l2 arg2
+            evalMap l2 arg1 arg2)
   where
     evalMap :: Loc -> Value -> Value -> Eval Value
     evalMap _ (Lambda (IFunc fn) env) (List xs) = do
@@ -101,12 +104,10 @@ foldBuiltIn ::
   -> Eval Value
 foldBuiltIn foldFnM l1 argFn = do
   checkFnArg l1 argFn
-  return $ BuiltIn $ BFunc (\l2 argInit ->
-                              return
-                              $ BuiltIn
-                              $ BFunc (\l3 argList -> do
-                                          checkListArg l3 argList
-                                          evalFold argFn argInit argList))
+  chain (\l2 argInit ->
+            chain (\l3 argList -> do
+                      checkListArg l3 argList
+                      evalFold argFn argInit argList))
   where
     foldFn :: (Value -> Eval Value) -> Value -> Value -> Eval Value
     foldFn fn1 acc curr = do
@@ -151,9 +152,9 @@ readFile l v = throwError $ TypeMismatch l "string" v
 writeFile :: Loc -> Value -> Eval Value
 writeFile l1 argFname = do
   checkStringArg l1 argFname
-  return $ BuiltIn $ BFunc (\l2 argText -> do
-                               checkStringArg l2 argText
-                               writeFileFn l1 argFname argText)
+  chain (\l2 argText -> do
+            checkStringArg l2 argText
+            writeFileFn l1 argFname argText)
   where
     writeFileFn :: Loc -> Value -> Value -> Eval Value
     writeFileFn l (String fname) (String text) = do
@@ -163,9 +164,9 @@ writeFile l1 argFname = do
 appendFile :: Loc -> Value -> Eval Value
 appendFile l1 argFname = do
   checkStringArg l1 argFname
-  return $ BuiltIn $ BFunc (\l2 argText -> do
-                               checkStringArg l2 argText
-                               appendFileFn l1 argFname argText)
+  chain (\l2 argText -> do
+            checkStringArg l2 argText
+            appendFileFn l1 argFname argText)
   where
     appendFileFn :: Loc -> Value -> Value -> Eval Value
     appendFileFn l (String fname) (String text) = do
@@ -175,9 +176,9 @@ appendFile l1 argFname = do
 split :: Loc -> Value -> Eval Value
 split l1 argDelim = do
   checkStringArg l1 argDelim
-  return $ BuiltIn $ BFunc (\l2 argText -> do
-                               checkStringArg l2 argText
-                               splitFn l1 argDelim argText)
+  chain (\l2 argText -> do
+            checkStringArg l2 argText
+            splitFn l1 argDelim argText)
   where
     splitFn :: Loc -> Value -> Value -> Eval Value
     splitFn l (String delim) (String text) = do
@@ -225,7 +226,7 @@ throw l v          = throwError $ ThrowError l (ppg v)
 
 assert :: Loc -> Value -> Eval Value
 assert l1 arg1 = do
-  return $ BuiltIn $ BFunc (\l2 arg2 -> assertFn l1 l2 arg1 arg2)
+  chain (\l2 arg2 -> assertFn l1 l2 arg1 arg2)
   where
     assertFn :: Loc -> Loc -> Value -> Value -> Eval Value
     assertFn l1 l2 arg1 arg2 = do
@@ -241,9 +242,9 @@ n `nthRoot` x = fst $ until (uncurry(==)) (\(_,x0) -> (x0,((n-1)*x0+x/x0**(n-1))
 root :: Loc -> Value -> Eval Value
 root l1 argRoot = do
   checkNumArg l1 argRoot
-  return $ BuiltIn $ BFunc (\l2 argNum -> do
-                               checkNumArg l2 argNum
-                               rootFn argRoot argNum)
+  chain (\l2 argNum -> do
+            checkNumArg l2 argNum
+            rootFn argRoot argNum)
   where
     rootFn :: Value -> Value -> Eval Value
     rootFn (Number root) (Number n) = return $ Number $ root `nthRoot` n
