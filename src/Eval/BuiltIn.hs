@@ -30,6 +30,7 @@ builtIns =
   , ("writeFile", mkB Eval.BuiltIn.writeFile)
   , ("appendFile", mkB Eval.BuiltIn.appendFile)
   , ("split", mkB Eval.BuiltIn.split)
+  , ("trim", mkB Eval.BuiltIn.trim)
   , ("isList", mkB Eval.BuiltIn.isList)
   , ("isNumber", mkB Eval.BuiltIn.isNumber)
   , ("isString", mkB Eval.BuiltIn.isString)
@@ -184,6 +185,10 @@ split l1 argDelim = do
     splitFn l (String delim) (String text) = do
       let xs = T.splitOn delim text
       return $ List (fmap String xs)
+
+trim :: Loc -> Value -> Eval Value
+trim _ (String s) = return $ String $ T.strip s
+trim l v          = throwError $ TypeMismatch l "string" v
 
 isString :: Loc -> Value -> Eval Value
 isString _ (String _) = return $ Bool True
