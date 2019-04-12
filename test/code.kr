@@ -37,18 +37,18 @@ assert (isList []) true
 assert (isNumber 0) true
 assert (isString "") true
 assert (isBool true) true
+assert (isAtom :hello) true
 
 assert (isList 0) false
 assert (isNumber []) false
 assert (isString 0) false
 assert (isBool 0) false
+assert (isAtom 0) false
 
 # misc
 
 assert (isString $ date ()) true
 assert (isString $ time ()) true
 
-print $ "k1 tests passed"
-
-# Stdlib
+print $ "🚀 Tests Passed."
 

@@ -34,6 +34,7 @@ builtIns =
   , ("isNumber", mkB Eval.BuiltIn.isNumber)
   , ("isString", mkB Eval.BuiltIn.isString)
   , ("isBool", mkB Eval.BuiltIn.isBool)
+  , ("isAtom", mkB Eval.BuiltIn.isAtom)
   , ("date", mkB Eval.BuiltIn.date)
   , ("time", mkB Eval.BuiltIn.time)
   , ("throwError", mkB Eval.BuiltIn.throw)
@@ -198,6 +199,10 @@ isList _ _        = return $ Bool False
 isBool :: Loc -> Value -> Eval Value
 isBool _ (Bool _) = return $ Bool True
 isBool _ _        = return $ Bool False
+
+isAtom :: Loc -> Value -> Eval Value
+isAtom _ (Atom _) = return $ Bool True
+isAtom _ _        = return $ Bool False
 
 date :: Loc -> Value -> Eval Value
 date _ _ = do
