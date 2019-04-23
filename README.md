@@ -92,7 +92,7 @@ You can also creates lists with ranges that work the same way as in Haskell.
 # => [1,3,5,7,9]
 ```
 
-### If expressions
+### Ifs
 
 Since everything in krill is an expression, if's must return a value, meaning
 the else block must be provided.
