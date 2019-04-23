@@ -8,6 +8,8 @@ Toy programming language with the following features.
 - Immutable
 - Minimal
 
+For more information and docs head to [krill.jakerunzer.com](https://krill.jakerunzer.com)
+
 ## Get a Taste
 
 All the even factorials between 0 and 10
@@ -27,5 +29,3 @@ sumOddSquares = sum . filter (not . even) . map square
 sumOddSquares [1..100]
 # => 166650
 ```
-
-For more information and docs head to [krill.jakerunzer.com](https://krill.jakerunzer.com)
