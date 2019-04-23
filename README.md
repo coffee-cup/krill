@@ -2,14 +2,11 @@
 
 Toy programming language with the following features.
 
-- Interpreted (tree walk)
 - Dynamic
 - Eager
 - Curried
 - Immutable
 - Minimal
-
-_It is being actively developed in Haskell_
 
 ## Get a Taste
 
@@ -25,7 +22,6 @@ filter even $ map fact [0..10]
 Sum numbers between 1 and 1000
 
 ```
-odd = not . even
 square = x -> x * x
 sumOddSquares = sum . filter (not . even) . map square
 sumOddSquares [1..100]
@@ -36,52 +32,12 @@ sumOddSquares [1..100]
 
 ### Literals
 
-There are
-
-#### Numbers
-
-``` text
-integer = 1
-double = 1.5
-```
-
-#### Strings
-
-``` text
-"hello"
-```
-
-#### Chars
-
-``` text
-'a'
-```
-
-#### Bools
-
-``` text
-true
-false
-```
-
-#### Atoms
-
-Identifiers prefixed with `:`.
-
-``` text
-:hello
-```
-
-
-#### Unit
-
-The _null_ of the language. Returned from functions that should not return
-anything (_e.g. print_).
-
-``` text
-()
-```
-
+- Numbers `1` and `1.5`
+- Strings `"hello"`
+- Chars `'a'`
+- Booleans `true` and `false`
+- Atoms `:hello`
+- Unit `()`
 
 ### Variables
 
@@ -109,7 +65,8 @@ a block. A block is an expression, or multiple expressions inside some curlies
 add1 = a b -> a + b
 
 add2 = a b -> {
-  a + b
+  result = a + b
+  result
 }
 ```
 
@@ -171,8 +128,8 @@ readFile "/var/tmp/foo"
 appendFile "/var/tmp/foo" "\nhow are you?"
 
 readFile "/var/tmp/foo"
-# => "hello world
-# => how are you?"
+# => hello world
+# => how are you?
 ```
 
 # Installation
