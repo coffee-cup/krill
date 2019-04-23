@@ -13,16 +13,90 @@ _It is being actively developed in Haskell_
 
 ## Get a Taste
 
-Here is a taste of the language
+All the even factorials between 0 and 10
 
 ```
-add = a b -> a + b
-sum = reduce add 0
-sum [1, 2, 3]
-# => 6
+even = x -> x % 2 == 0
+fact = n -> if n == 0 then 1 else n * (fact $ n - 1)
+filter even $ map fact [0..10]
+# => [2,6,24,120,720,5040,40320,362880,3628800]
+```
+
+Sum numbers between 1 and 1000
+
+```
+odd = not . even
+square = x -> x * x
+sumOddSquares = sum . filter (not . even) . map square
+sumOddSquares [1..100]
+# => 166650
 ```
 
 ## Syntax
+
+### Literals
+
+There are
+
+#### Numbers
+
+``` text
+integer = 1
+double = 1.5
+```
+
+#### Strings
+
+``` text
+"hello"
+```
+
+#### Chars
+
+``` text
+'a'
+```
+
+#### Bools
+
+``` text
+true
+false
+```
+
+#### Atoms
+
+Identifiers prefixed with `:`.
+
+``` text
+:hello
+```
+
+
+#### Unit
+
+The _null_ of the language. Returned from functions that should not return
+anything (_e.g. print_).
+
+``` text
+()
+```
+
+
+### Variables
+
+You can define variables easily
+
+``` text
+x = 2
+```
+
+Variables are immutable
+
+``` text
+x = 2
+x = 1 # Error: Variable `x` Already Bound
+```
 
 ### Lambdas
 
@@ -41,10 +115,81 @@ add2 = a b -> {
 
 The last expression in a block is returned.
 
-### If then else
-
-### Loops
-
 ### Lists
 
+Lists are as you expect
+
+``` text
+l = [1,2,3]
+l[1]
+# => 2
+```
+
+You can also creates lists with ranges that work the same way as in Haskell.
+
+``` text
+[1..10]
+# => [1,2,3,4,5,6,7,8,9,10]
+
+[1,3..10]
+# => [1,3,5,7,9]
+```
+
+### If expressions
+
+Since everything in krill is an expression, if's must return a value, meaning
+the else block must be provided.
+
+``` text
+if x == 2 then "x is two!" else {
+  "x is not two."
+}
+```
+
+### For Loops
+
+``` text
+for x in [1..5] { print x }
+# => 1
+# => 2
+# => 3
+# => 4
+# => 5
+```
+
 ### I/O
+
+There are three I/O functions. One for reading, writing, and appending.
+
+
+``` text
+writeFile "/var/tmp/foo" "hello world"
+
+readFile "/var/tmp/foo"
+# => "hello world"
+
+appendFile "/var/tmp/foo" "\nhow are you?"
+
+readFile "/var/tmp/foo"
+# => "hello world
+# => how are you?"
+```
+
+# Installation
+
+Build it yourself with [Haskell](https://www.haskell.org/).
+
+1.  Install [Stack](https://docs.haskellstack.org/en/stable/README/), which we will use to compile the Haskell code.
+2.  Clone the repository and `cd` into the directory.
+3.  Run `stack setup` to download the correct version of GHC.
+4.  Run `stack install --local-bin-path=out/build` to build the application.
+5.  Copy the application binary at `out/build/krill` to wherever you need it to go.
+
+## Repl
+
+Running `krill` with no arguments will launch a repl. You can `.help` in the
+repl for a list of available commands. Commands are all prefixed with the `.`.
+
+## Run a file
+
+You can run a file with `krill path/to/file.kr`.

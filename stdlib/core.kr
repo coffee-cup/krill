@@ -9,6 +9,8 @@ const x y -> x
 
 compose = f g -> f . g
 
+not = x -> !x
+
 # Lists
 
 reduce = foldl
@@ -19,7 +21,6 @@ filter = p -> reduce (acc curr -> {
 }) []
 
 sum = reduce (acc curr -> acc + curr) 0
-product = reduce (acc curr -> acc * curr) 1
 
 flatten = reduce (flat toFlatten -> {
   if (isList toFlatten) then flat ++ flatten(toFlatten)
