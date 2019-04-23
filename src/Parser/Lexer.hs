@@ -59,7 +59,7 @@ double = lexeme L.float
 -- Common symbols
 
 comma, colon, equals, implies, pipe, dcolon, quote, dquote, bslash, arrow, unit,
-  lbracket, rbracket
+  lbracket, rbracket, ddot
   :: Parser ()
 
 arrow = void $ lexeme $ symbol "->"
@@ -75,6 +75,7 @@ quote = void $ lexeme $ char '\''
 unit = void $ lexeme $ symbol "()"
 lbracket = void $ lexeme $ char '['
 rbracket = void $ lexeme $ char ']'
+ddot = void $ lexeme $ symbol ".."
 
 -- Parse an escaped character
 escapedChars :: Parser Char

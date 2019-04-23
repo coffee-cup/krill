@@ -61,7 +61,7 @@ pUnitLit = p <?> "unit"
     p = unit *> return LitUnit
 
 pLiteral :: Parser Literal
-pLiteral = pNumberLit
+pLiteral = try pNumberLit
   <|> pCharLit
   <|> pStringLit
   <|> pBoolLit
@@ -74,7 +74,7 @@ pExprLiteral :: Parser Expr
 pExprLiteral = ELit <$> getLoc <*> pLiteral <?> "literal"
 
 pExprVar :: Parser Expr
-pExprVar = EVar <$> getLoc <*> pName
+pExprVar = EVar <$> getLoc <*> pName <?> "variable"
 
 mkPrefix :: Loc -> T.Text -> Expr -> Expr
 mkPrefix loc name = EUnOp loc name
@@ -123,51 +123,78 @@ pExprLam = do
   ELam l args <$> pBlock
 
 pExprIf :: Parser Expr
-pExprIf = do
-  l <- getLoc
-  rword "if"
-  cond <- pExpr
-  rword "then"
-  thenBlock <- pBlock
-  rword "else"
-  elseBlock <- pBlock
-  return $ EIf l cond thenBlock elseBlock
+pExprIf = p <?> "if expression"
+  where
+    p = do
+      l <- getLoc
+      rword "if"
+      cond <- pExpr
+      rword "then"
+      thenBlock <- pBlock
+      rword "else"
+      elseBlock <- pBlock
+      return $ EIf l cond thenBlock elseBlock
 
 pExprFor :: Parser Expr
-pExprFor = do
-  l <- getLoc
-  rword "for"
-  name <- pName
-  rword "in"
-  e <- pExpr
-  b <- pBlock
-  return $ EFor l name e b
+pExprFor = p <?> "for expression"
+  where
+    p = do
+      l <- getLoc
+      rword "for"
+      name <- pName
+      rword "in"
+      e <- pExpr
+      b <- pBlock
+      return $ EFor l name e b
 
 pExprAss :: Parser Expr
-pExprAss = do
-  l <- getLoc
-  n <- pName
-  equals
-  e <- pExpr
-  try scn
-  return $ EAss l n e
+pExprAss = p <?> "assignment expression"
+  where
+    p = do
+      l <- getLoc
+      n <- pName
+      equals
+      e <- pExpr
+      try scn
+      return $ EAss l n e
 
 pExprList :: Parser Expr
-pExprList = do
-  l <- getLoc
-  lbracket
-  xs <- pExpr `sepBy` comma
-  rbracket
-  return $ EList l xs
+pExprList = p <?> "list"
+  where
+    p = do
+      l <- getLoc
+      lbracket
+      xs <- pExpr `sepBy` comma
+      rbracket
+      return $ EList l xs
 
 pExprListAcc :: Parser Expr
-pExprListAcc = do
-  l <- getLoc
-  n <- pId
-  lbracket
-  e <- pExpr
-  rbracket
-  return $ EListAcc l n e
+pExprListAcc = p <?> "list access"
+  where
+    p = do
+      l <- getLoc
+      n <- pId
+      lbracket
+      e <- pExpr
+      rbracket
+      return $ EListAcc l n e
+
+pExprRange :: Parser Expr
+pExprRange = p <?> "range"
+  where
+    validExpr = choice [ pExprVar
+                       , pExprParens
+                       , pExprLiteral
+                       ]
+    p = do
+      l <- getLoc
+      lbracket
+      start <- validExpr
+      next <- try (comma *> validExpr) <|> return (ELit NoLoc $ LitUnit)
+      ddot
+      end <- validExpr
+      rbracket
+      return $ ERange l start next end
 
 pExprParens :: Parser Expr
 pExprParens = EParens <$> getLoc <*> parens pExpr <?> "parens"
@@ -176,7 +203,8 @@ aexpr :: Parser Expr
 aexpr = do
   r <- some $ choice [ try pExprLiteral
                      , pExprParens
-                     , pExprList
+                     , try pExprList
+                     , pExprRange
                      , try pExprListAcc
                      , try pExprVar
                      ]
@@ -201,7 +229,7 @@ pStmt = pStmtExpr
 -- Blocks
 
 pBlock :: Parser Block
-pBlock = pMultiLine <|> pSingleLine
+pBlock = (pMultiLine <|> pSingleLine) <?> "block"
   where
     pSingleLine = do
       s <- pStmt
@@ -209,19 +237,6 @@ pBlock = pMultiLine <|> pSingleLine
     pMultiLine = do
       ss <- (braces . many) (pStmt <* try scn)
       return $ Block ss
-
--- Declarations
-
-pFuncDecl :: Parser Decl
-pFuncDecl = do
-  loc <- getLoc
-  n <- pName
-  args <- many pName
-  arrow
-  Func loc n args <$> pBlock
-
-pDecl :: Parser Decl
-pDecl = pFuncDecl
 
 -- Module
 

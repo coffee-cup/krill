@@ -105,7 +105,7 @@ evalExpr (EIf _ eCond eThen eElse) = do
   case cond of
     Bool True -> evalBlock eThen
     Bool False -> evalBlock eElse
-    _ -> throwError $ TypeMismatch (loc eCond) "Condition to be boolean" cond
+    _ -> throwError $ TypeMismatch (loc eCond) "condition to be boolean" cond
 evalExpr (EFor _ n eList b) = do
   list <- evalExpr eList
   env <- gets _env
@@ -140,11 +140,25 @@ evalExpr (EListAcc l eName eIdx) = do
               if (L.length xs) <= (round n)
               then throwError $ IndexOutOfRange l (round n)
               else return (xs !! (round n))
-            _ ->
-              throwError $ VariableNotAList l eName
+            v ->
+              throwError $ TypeMismatch l "list" v
       else throwError $ IndexNotAnInteger l idx
     _ ->
       throwError $ IndexNotAnInteger l mList
+evalExpr (ERange _ eStart eNext eEnd) = do
+  start <- evalExpr eStart
+  next <- evalExpr eNext
+  end <- evalExpr eEnd
+  checkNumArg (loc eStart) start
+  checkNumArg (loc eEnd) end
+  let (Number nStart) = start
+  let (Number nEnd) = end
+  (Number nNext) <- case next of
+        Unit         -> return $ Number $ nStart + 1
+        Number nNext -> return $ Number nNext
+        _            -> throwError $ TypeMismatch (loc eNext) "number" next
+  return $ List $ fmap Number $ L.filter (<=nEnd) $ [nStart,nNext..nEnd]
+
 evalExpr (EApp _ e1 e2) = do
   fun <- evalExpr e1
   arg <- evalExpr e2

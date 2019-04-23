@@ -114,8 +114,6 @@ instance Pretty EvalError where
       withLocation l ("Error: Operator `" <> pp n <> "` Not Found")
     VariableAlreadyBound l n ->
       withLocation l ("Error: Variable `" <> pp n <> "` Already Bound")
-    VariableNotAList l n ->
-      withLocation l ("Error:" <+> pp n <+> "is not a list")
     IndexNotAnInteger l v ->
       withLocation l ("Error: Index" <+> pp v <+> "is not an integer")
     IndexOutOfRange l i ->
@@ -161,7 +159,7 @@ instance Pretty Expr where
     e@(ELam _ args b) ->
       parensIf (p>0) $ block (hsep (fmap pp args) <+> "->") b
     EList _ xs -> text "[" <> hsep pxs <> text "]"
-      where pxs = punctuate (text ", ") $ fmap pp xs
+      where pxs = punctuate (text ",") $ fmap pp xs
     EAss _ n e -> pp n <+> equals <+> ppr p e
     EParens _ e -> parens (pp e)
 
@@ -197,7 +195,7 @@ instance Pretty Value where
     Lambda _ _ -> text "(lambda)"
     BuiltIn _  -> text "(lambda)"
     List xs ->
-      text "[" <> hsep pxs <> text "]"
+      text "[" <> hcat pxs <> text "]"
       where pxs = punctuate (text ",") $ fmap pp xs
     Unit       -> text "()"
 

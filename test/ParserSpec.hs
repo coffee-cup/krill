@@ -134,6 +134,19 @@ spec = do
                                                (EVar NoLoc "a")
                                                (EList NoLoc [ELit NoLoc $ LitNumber 1]))
 
+    describe "List Range" $ do
+      it "range with no next" $
+        parseSimple pExpr "[1..x]" `shouldBe` (Right $ ERange NoLoc
+                                               (ELit NoLoc $ LitNumber 1)
+                                               (ELit NoLoc $ LitUnit)
+                                               (EVar NoLoc "x"))
+
+      it "range with next" $
+        parseSimple pExpr "[1,2..x]" `shouldBe` (Right $ ERange NoLoc
+                                               (ELit NoLoc $ LitNumber 1)
+                                               (ELit NoLoc $ LitNumber 2)
+                                               (EVar NoLoc "x"))
+
     describe "Operators" $ do
       it "unary negation" $
         parseSimple pExpr "-a" `shouldBe` (Right $ EUnOp NoLoc "-" (EVar NoLoc "a"))

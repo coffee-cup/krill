@@ -42,6 +42,16 @@ spec = do
         it "string to number" $ do
           checkEval ["\"a \" ++ 1"] (String "a 1")
 
+    describe "Range" $ do
+      it "simple range" $ do
+        checkEval ["[1..5]"] (List [Number 1, Number 2, Number 3, Number 4, Number 5])
+
+      it "range with next" $ do
+        checkEval ["[1,3..5]"] (List [Number 1, Number 3, Number 5])
+
+      it "variable in range" $ do
+        checkEval ["x = 5", "[1,3..x]"] (List [Number 1, Number 3, Number 5])
+
     it "variable lookup" $ do
       checkEval ["x = 1", "x"] (Number 1)
 

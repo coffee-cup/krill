@@ -49,6 +49,8 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     - -Wall
+    - -Wincomplete-patterns
+    - -fno-warn-type-defaults
     dependencies:
     - krill
 
@@ -61,6 +63,7 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     - -Wall
+    - -fno-warn-type-defaults
     dependencies:
     - hspec >= 2.6 && < 2.7
     - hspec-expectations >= 0.8.2 && < 0.8.3

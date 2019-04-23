@@ -60,7 +60,6 @@ data EvalError
   | NotList Loc Value
   | OperatorNotFound Loc Name
   | VariableAlreadyBound Loc T.Text
-  | VariableNotAList Loc T.Text
   | IndexNotAnInteger Loc Value
   | IndexOutOfRange Loc Integer
   | NoParse Loc T.Text Value

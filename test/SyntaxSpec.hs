@@ -2,7 +2,6 @@
 
 module SyntaxSpec (spec) where
 
-import qualified Data.Text.Lazy as T
 import           Test.Hspec
 
 import           Parser.Syntax

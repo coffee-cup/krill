@@ -24,6 +24,7 @@ data Expr
  | EAss Loc Name Expr        -- a = b
  | EList Loc [Expr]          -- [1, x, "hello"]
  | EListAcc Loc Name Expr    -- list[x]
+ | ERange Loc Expr Expr Expr -- [1,2..10] or [1..10]
  | EParens Loc Expr          -- (a)
  deriving (Ord, Show)
 
@@ -109,6 +110,8 @@ instance Eq Expr where
     xs1 == xs2
   (==) (EListAcc _ n1 e1) (EListAcc _ n2 e2) =
     n1 == n2 && e1 == e2
+  (==) (ERange _ e1 e2 e3) (ERange _ e4 e5 e6) =
+    e1 == e4 && e2 == e5 && e3 == e6
   (==) (EParens _ e1) (EParens _ e2) =
     e1 == e2
   (==) _ _ = False
