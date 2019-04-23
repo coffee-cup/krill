@@ -116,7 +116,7 @@ evalExpr (EFor _ n eList b) = do
                    evalBlock b)
       modify (\st -> st { _env = env })
       return Unit
-    v -> throwError $ NotList (loc eList) v
+    v -> throwError $ TypeMismatch (loc eList) "list" v
 evalExpr (EAss l n e) = do
   env <- gets _env
   let isBound = inInnerScope n env
@@ -171,7 +171,7 @@ evalModule :: Module -> Eval ()
 evalModule (Module stmts) = mapM_ evalStmt stmts
 
 evalApp :: Loc -> Loc -> Value -> Value -> Eval Value
-evalApp lFun lArg fun arg = do
+evalApp lFun _ fun arg = do
   case fun of
     Lambda (IFunc fn) env -> do
       evalInEnv (fn arg) env

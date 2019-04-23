@@ -1,11 +1,9 @@
 module Flags where
 
-import qualified Data.Text.Lazy      as T
 import           Options.Applicative
 
-data Flags = Flags
-  { dumpAst :: Bool
-  } deriving (Eq)
+newtype Flags = Flags { dumpAst :: Bool}
+  deriving (Eq)
 
 flagMap :: Flags -> [(String, Bool)]
 flagMap Flags

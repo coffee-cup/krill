@@ -97,6 +97,7 @@ map l1 arg1 = do
     evalMap l (BuiltIn (BFunc fn)) (List xs) = do
         ys <- mapM (fn l) xs
         return $ List ys
+    evalMap _ _ _ = error "fall through map"
 
 foldBuiltIn ::
   ((Value -> Value -> Eval Value) -> Value -> [Value] -> Eval Value)
@@ -105,7 +106,7 @@ foldBuiltIn ::
   -> Eval Value
 foldBuiltIn foldFnM l1 argFn = do
   checkFnArg l1 argFn
-  chain (\l2 argInit ->
+  chain (\_ argInit ->
             chain (\l3 argList -> do
                       checkListArg l3 argList
                       evalFold argFn argInit argList))
@@ -119,11 +120,12 @@ foldBuiltIn foldFnM l1 argFn = do
         _                       -> throwError $ NumArgs l1 2 1
 
     evalFold :: Value -> Value -> Value -> Eval Value
-    evalFold lam@(Lambda (IFunc fn) env) init (List xs) =
+    evalFold (Lambda (IFunc fn) env) init (List xs) =
       evalInEnv (foldFnM (foldFn fn) init xs) env
-    evalFold bi@(BuiltIn (BFunc fn)) init (List xs) = do
+    evalFold (BuiltIn (BFunc fn)) init (List xs) = do
       res <- foldlM (foldFn (fn l1)) init xs
       return res
+    evalFold _ _ _ = error "fall through fold"
 
 foldl :: Loc -> Value -> Eval Value
 foldl = foldBuiltIn foldlM
@@ -158,9 +160,10 @@ writeFile l1 argFname = do
             writeFileFn l1 argFname argText)
   where
     writeFileFn :: Loc -> Value -> Value -> Eval Value
-    writeFileFn l (String fname) (String text) = do
+    writeFileFn _ (String fname) (String text) = do
       liftIO $ T.writeFile (T.unpack fname) text
       return Unit
+    writeFileFn _ _ _ = error "fall through writeFile"
 
 appendFile :: Loc -> Value -> Eval Value
 appendFile l1 argFname = do
@@ -170,9 +173,10 @@ appendFile l1 argFname = do
             appendFileFn l1 argFname argText)
   where
     appendFileFn :: Loc -> Value -> Value -> Eval Value
-    appendFileFn l (String fname) (String text) = do
+    appendFileFn _ (String fname) (String text) = do
       liftIO $ T.appendFile (T.unpack fname) text
       return Unit
+    appendFileFn _ _ _ = error "fall through appendFile"
 
 split :: Loc -> Value -> Eval Value
 split l1 argDelim = do
@@ -182,9 +186,10 @@ split l1 argDelim = do
             splitFn l1 argDelim argText)
   where
     splitFn :: Loc -> Value -> Value -> Eval Value
-    splitFn l (String delim) (String text) = do
+    splitFn _ (String delim) (String text) = do
       let xs = T.splitOn delim text
       return $ List (fmap String xs)
+    splitFn _ _ _ = error "fall through split"
 
 trim :: Loc -> Value -> Eval Value
 trim _ (String s) = return $ String $ T.strip s
@@ -253,6 +258,7 @@ root l1 argRoot = do
   where
     rootFn :: Value -> Value -> Eval Value
     rootFn (Number root) (Number n) = return $ Number $ root `nthRoot` n
+    rootFn _ _                      = error "fall through root"
 
 floor :: Loc -> Value -> Eval Value
 floor _ (Number n) = return $ Number $ fromIntegral $ Prelude.floor n

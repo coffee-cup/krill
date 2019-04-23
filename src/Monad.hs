@@ -2,7 +2,6 @@
 
 module Monad where
 
-import           Control.Applicative
 import           Control.Monad.Except
 import           Control.Monad.Fail
 import           Control.Monad.State

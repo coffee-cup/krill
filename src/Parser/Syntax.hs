@@ -56,8 +56,7 @@ data Decl
 
 -- Module
 
-data Module
-  = Module [Stmt]
+newtype Module = Module [Stmt]
   deriving (Eq, Ord, Show)
 
 -- Helpers
@@ -81,6 +80,7 @@ instance Location Expr where
     EAss l _ _     -> l
     EList l _      -> l
     EListAcc l _ _ -> l
+    ERange l _ _ _ -> l
     EParens l _    -> l
 
 instance Location Stmt where

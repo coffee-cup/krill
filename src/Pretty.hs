@@ -108,8 +108,6 @@ instance Pretty EvalError where
                       <+> integer received)
     NotFunction l val ->
       withLocation l ("Error: Not a Function:" <+> pp val)
-    NotList l val ->
-      withLocation l ("Error: Not a List:" <+> pp val)
     OperatorNotFound l n ->
       withLocation l ("Error: Operator `" <> pp n <> "` Not Found")
     VariableAlreadyBound l n ->
@@ -146,21 +144,29 @@ ppapp p e = parensIf (p>0) $ ppr p f <+> args
     args = sep $ fmap (ppr (p+1)) xs
 
 block :: Doc -> Block -> Doc
-block d b@(Block [s]) = d <+> pp b
+block d b@(Block [_]) = d <+> pp b
 block d b             = hang (d <+> lbrace) 2 (pp b) <> "\n}"
 
 instance Pretty Expr where
   ppr p ex = case ex of
     ELit _ l          -> ppr p l
-    e@(EApp {})     -> ppapp p e
+    e@EApp {}     -> ppapp p e
     EBinOp _ op e1 e2 -> ppr p e1 <+> pp op <+> ppr p e2
     EUnOp _ op e      -> pp op <> ppr p e
     EVar _ n -> pp n
-    e@(ELam _ args b) ->
+    ELam _ args b ->
       parensIf (p>0) $ block (hsep (fmap pp args) <+> "->") b
     EList _ xs -> text "[" <> hsep pxs <> text "]"
       where pxs = punctuate (text ",") $ fmap pp xs
+    EIf _ c t e
+      -> block (block (text "if" <+> pp c <+> "then") t) e
+    EFor _ n xs b ->
+      block (text "for" <+> pp n <+> "in" <+> pp xs) b
     EAss _ n e -> pp n <+> equals <+> ppr p e
+    EListAcc _ n e -> pp n <> text "[" <> pp e <> text "]"
+    ERange _ s n e -> case n of
+      ELit _ LitUnit -> text "[" <> pp s <> text ".." <> pp e <> text "]"
+      eNext -> text "[" <> pp s <> text "," <> pp eNext <> text ".." <> pp e <> text "]"
     EParens _ e -> parens (pp e)
 
 instance Pretty Block where

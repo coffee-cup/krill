@@ -28,7 +28,7 @@ compileFile = do
       es <- gets _evalS
       (val, es') <- inIO $ runEval (evalModule mod) es
       case val of
-        Right val' -> do
+        Right _ -> do
           modify (\st -> st { _evalS = es' })
         Left e     -> throwError $ EvaluationError e
 
@@ -89,7 +89,7 @@ loadStdlib = do
         es <- gets _evalS
         (val, es') <- inIO $ runEval (evalModule mod) es
         case val of
-          Right _  -> modify (\st -> st { _evalS = es' })
-          Left err -> throwError $ StdlibError "Unable to eval"
+          Right _ -> modify (\st -> st { _evalS = es' })
+          Left _  -> throwError $ StdlibError "Unable to eval"
       Left s -> throwError $ StdlibError s
     Nothing -> throwError $ StdlibNotFound stdlibCore

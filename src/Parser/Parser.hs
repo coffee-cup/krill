@@ -6,7 +6,6 @@ import           Data.Void
 import           Text.Megaparsec
 import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer     as L
-import           Text.Megaparsec.Error
 
 import           Parser.Lexer
 import           Parser.Syntax
@@ -190,7 +189,7 @@ pExprRange = p <?> "range"
       l <- getLoc
       lbracket
       start <- validExpr
-      next <- try (comma *> validExpr) <|> return (ELit NoLoc $ LitUnit)
+      next <- try (comma *> validExpr) <|> return (ELit NoLoc LitUnit)
       ddot
       end <- validExpr
       rbracket

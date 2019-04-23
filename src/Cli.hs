@@ -2,9 +2,6 @@ module Cli
   ( cliIFace
   ) where
 
-import           Control.Monad.State
-import           Data.Monoid
-import           Data.Text.Lazy      as T
 import           Data.Text.Lazy.IO   as T
 import           Options.Applicative
 
@@ -23,9 +20,6 @@ data Options = Options
   { lineOpt :: LineOpts
   , flags   :: Flags.Flags
   } deriving (Eq, Show)
-
-withInfo :: Parser a -> String -> ParserInfo a
-withInfo p desc = info (helper <*> p) $ progDesc desc
 
 parseRepl :: Parser LineOpts
 parseRepl = pure UseReplLineOpts

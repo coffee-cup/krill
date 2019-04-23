@@ -31,7 +31,7 @@ initState = IState
 type Repl a = HaskelineT (StateT IState IO) a
 
 hoistErr :: Pretty e => Either e a -> Repl ()
-hoistErr (Right val) = return ()
+hoistErr (Right _) = return ()
 hoistErr (Left err) =
   liftIO $ T.putStrLn $ ppg err
 
@@ -75,7 +75,7 @@ showError :: String -> Repl ()
 showError s = liftIO $ T.putStrLn $ T.pack s
 
 changeFlag :: [String] -> String -> Bool -> Repl ()
-changeFlag [flag] name change = do
+changeFlag [flag] _ change = do
   cs <- gets _compilerState
   let flags = _flags cs
   case setFlag flag change flags of
@@ -108,13 +108,15 @@ env _ = do
 
 clear :: [String] -> Repl ()
 clear [] = showError "clear requires a parameter name"
-clear (n:[]) = do
-  cs <- gets _compilerState
-  let es = _evalS cs
-  let env = _env es
-  let newEnv = clearValue (T.pack n) env
-  let cs' = cs { _evalS = es { _env = newEnv } }
-  updateCompilerState cs'
+clear xs = mapM_ go xs
+  where
+    go n = do
+      cs <- gets _compilerState
+      let es = _evalS cs
+      let env = _env es
+      let newEnv = clearValue (T.pack n) env
+      let cs' = cs { _evalS = es { _env = newEnv } }
+      updateCompilerState cs'
 
 help :: a -> Repl ()
 help _ = showMsg "Commands available \n\

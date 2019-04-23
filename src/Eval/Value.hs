@@ -57,7 +57,6 @@ data EvalError
   | UnboundVar Loc T.Text
   | NumArgs Loc Integer Integer
   | NotFunction Loc Value
-  | NotList Loc Value
   | OperatorNotFound Loc Name
   | VariableAlreadyBound Loc T.Text
   | IndexNotAnInteger Loc Value
@@ -70,12 +69,18 @@ data EvalError
 
 instance Location EvalError where
   loc e = case e of
-    TypeMismatch l _ _   -> l
-    UnboundVar l _       -> l
-    NumArgs l _ _        -> l
-    NotFunction l _      -> l
-    OperatorNotFound l _ -> l
-    Default l _          -> l
+    TypeMismatch l _ _       -> l
+    UnboundVar l _           -> l
+    NumArgs l _ _            -> l
+    NotFunction l _          -> l
+    OperatorNotFound l _     -> l
+    VariableAlreadyBound l _ -> l
+    IndexNotAnInteger l _    -> l
+    IndexOutOfRange l _      -> l
+    NoParse l _ _            -> l
+    FileNotFound l _         -> l
+    ThrowError l _           -> l
+    Default l _              -> l
 
 runEval :: Eval a -> EvalState -> IO (Either EvalError a, EvalState)
 runEval = runStateT . runExceptT . unEval
