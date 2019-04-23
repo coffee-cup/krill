@@ -49,8 +49,6 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     - -Wall
-    - -Wincomplete-patterns
-    - -fno-warn-type-defaults
     dependencies:
     - krill
 

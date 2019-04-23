@@ -20,10 +20,18 @@ assert (length [1]) 1
 
 square = x -> x * x
 assert (map square [1,2,3]) [1,4,9]
+assert (map square [1..10]) [1,4,9,16,25,36,49,64,81,100]
+assert (map square [1..10]) [1,4,9,16,25,36,49,64,81,100]
 
 assert (sum [1,2,3]) 6
 assert (foldl (acc curr -> acc - curr) 0 [1,2,3]) (-6)
 assert (foldr (acc curr -> acc - curr) 0 [1,2,3]) 2
+
+even = x -> x % 2 == 0
+odd = x -> !(even x)
+
+assert (filter even $ map square [1..10]) [4,16,36,64,100]
+assert (filter odd $ map square [1..10]) [1,9,25,49,81]
 
 # to conversions
 
