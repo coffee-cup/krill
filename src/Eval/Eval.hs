@@ -137,11 +137,15 @@ evalExpr (EListAcc l eName eIdx) = do
       if Eval.Eval.isInt n then
         case mList of
             List xs ->
-              if (L.length xs) <= (round n)
+              if L.length xs <= (round n)
               then throwError $ IndexOutOfRange l (round n)
-              else return (xs !! (round n))
+              else return (xs !! round n)
+            String s ->
+              if T.length s <= round n
+              then throwError $ IndexOutOfRange l (round n)
+              else return $ Char $ T.unpack s !! round n
             v ->
-              throwError $ TypeMismatch l "list" v
+              throwError $ TypeMismatch l "list or string" v
       else throwError $ IndexNotAnInteger l idx
     _ ->
       throwError $ IndexNotAnInteger l mList
