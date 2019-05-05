@@ -1,6 +1,8 @@
-# krill
+![krill](https://user-images.githubusercontent.com/3044853/57198923-baa66c80-6f70-11e9-9bbd-5d537d85a6ca.png)
 
-Toy programming language with the following features.
+# Krill
+
+Programming language that is:
 
 - Dynamic
 - Eager
