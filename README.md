@@ -21,7 +21,7 @@ filter (not . odd) $ map fact [0..5]
 # => [2,6,24,120]
 ```
 
-Sum numbers between 1 and 1000
+Sum odd numbers between 1 and 1000
 
 ```haskell
 square = x -> x * x
