@@ -1,6 +1,6 @@
-![krill](https://user-images.githubusercontent.com/3044853/57198923-baa66c80-6f70-11e9-9bbd-5d537d85a6ca.png)
-
 # Krill
+
+![krill](https://user-images.githubusercontent.com/3044853/57198923-baa66c80-6f70-11e9-9bbd-5d537d85a6ca.png)
 
 Programming language that is:
 
