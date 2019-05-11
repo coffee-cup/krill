@@ -66,7 +66,24 @@ assert (isString 0) false
 assert (isBool 0) false
 assert (isAtom 0) false
 
+# math
+
+assert (sin 0) 0
+assert (cos 0) 1
+
+assert (pow 2 3) 8
+assert (root 3 8) 2
+assert (sqrt 25) 5
+assert (floor 2.6) 2
+assert (ceil 2.2) 3
+
 # misc
+
+assert (isString $ date ()) true
+assert (isString $ time ()) true
+
+assert (min 1 2) 1
+assert (max 1 2) 2
 
 assert (isString $ date ()) true
 assert (isString $ time ()) true
