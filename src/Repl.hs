@@ -85,26 +85,10 @@ changeFlag [flag] _ change = do
     Nothing -> showError $ "Flag " ++ flag ++ " is invalid"
 changeFlag _ name _ = showError $ name ++ " command requires flag name as argument"
 
-set :: [String] -> Repl ()
-set flags = changeFlag flags "set" True
-
-unset :: [String] -> Repl ()
-unset flags = changeFlag flags "unset" False
-
 load :: [String] -> Repl ()
 load []         = showError "load requires a filename"
 load (fname:[]) = execFile fname
 load _          = showError "load requires a single filename"
-
-flags :: a -> Repl ()
-flags _ = do
-  cs <- gets _compilerState
-  showMsg $ show $ _flags cs
-
-env :: a -> Repl ()
-env _ = do
-  env <- (_env . _evalS) <$> gets _compilerState
-  showMsg $ T.unpack $ ppg env
 
 clear :: [String] -> Repl ()
 clear [] = showError "clear requires a parameter name"
@@ -120,11 +104,10 @@ clear xs = mapM_ go xs
 
 help :: a -> Repl ()
 help _ = showMsg "Commands available \n\
-\  .set FLAG \t sets a compiler flag \n\
-\  .unset FLAG \t unsets a compiler flag \n\
-\  .flags \t print all set compiler flags \n\
 \  .load \t load source file into repl \n\
-\  .quit \t quit the repl"
+\  .clear [name] \t clear name from env. \n\
+\  .help \t show this message \n\
+\  .quit \t quit the repl "
 
 quit :: a -> Repl ()
 quit _ = liftIO exitSuccess
@@ -142,12 +125,8 @@ comp :: (Monad m, MonadState IState m) => WordCompleter m
 comp n = do
   let cmds =
         [ ".load"
-        , ".set"
-        , ".unset"
-        , ".flags"
         , ".quit"
         , ".help"
-        , ".env"
         , ".clear"
         ]
   return $ filter (isPrefixOf n) cmds
@@ -157,13 +136,9 @@ completer = Prefix (wordCompleter comp) defaultMatcher
 
 options :: [(String, [String] -> Repl ())]
 options =
-  [ ("set", set)
-  , ("unset", unset)
-  , ("flags", flags)
-  , ("load", load)
+  [ ("load", load)
   , ("help", help)
   , ("quit", quit)
-  , ("env", env)
   , ("clear", clear)
   ]
 
@@ -174,4 +149,4 @@ ini = liftIO $ T.putStrLn $ T.pack banner
 
 repl :: CompilerState -> IO ()
 repl cs = flip evalStateT (initState cs)
-  $ evalRepl (pure "krill> ") cmd options (Just '.') completer ini
+  $ evalRepl (pure "λ ") cmd options (Just '.') completer ini
