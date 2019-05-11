@@ -1,7 +1,11 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Compiler where
 
 import           Control.Monad.Except
 import           Control.Monad.State
+import           Data.FileEmbed
+import           Data.String
 import           Data.Text.Lazy       as T
 import           Data.Text.Lazy.IO    as T
 import           System.Directory
@@ -77,19 +81,16 @@ getFileContents fname = do
       return $ Just text
     else return Nothing
 
-stdlibCore :: FilePath
-stdlibCore = "stdlib/core.kr"
+stdlibContents :: IsString a => a
+stdlibContents = $(embedStringFile "stdlib/core.kr")
 
 loadStdlib :: CompilerM ()
 loadStdlib = do
-  mCore <- inIO $ getFileContents stdlibCore
-  case mCore of
-    Just core -> case Parser.Parser.parseModule (T.pack stdlibCore) core of
-      Right mod -> do
-        es <- gets _evalS
-        (val, es') <- inIO $ runEval (evalModule mod) es
-        case val of
-          Right _ -> modify (\st -> st { _evalS = es' })
-          Left _  -> throwError $ StdlibError "Unable to eval"
-      Left s -> throwError $ StdlibError s
-    Nothing -> throwError $ StdlibNotFound stdlibCore
+  case Parser.Parser.parseModule (T.pack "stdlib.kr") stdlibContents of
+    Right mod -> do
+      es <- gets _evalS
+      (val, es') <- inIO $ runEval (evalModule mod) es
+      case val of
+        Right _ -> modify (\st -> st { _evalS = es' })
+        Left _  -> throwError $ StdlibError "Unable to eval"
+    Left s -> throwError $ StdlibError s
