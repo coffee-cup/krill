@@ -59,7 +59,7 @@ data EvalError
   | NotFunction Loc Value
   | OperatorNotFound Loc Name
   | VariableAlreadyBound Loc T.Text
-  | IndexNotAnInteger Loc Value
+  | NotAnInteger Loc Value
   | IndexOutOfRange Loc Integer
   | NoParse Loc T.Text Value
   | FileNotFound Loc T.Text
@@ -75,7 +75,7 @@ instance Location EvalError where
     NotFunction l _          -> l
     OperatorNotFound l _     -> l
     VariableAlreadyBound l _ -> l
-    IndexNotAnInteger l _    -> l
+    NotAnInteger l _         -> l
     IndexOutOfRange l _      -> l
     NoParse l _ _            -> l
     FileNotFound l _         -> l

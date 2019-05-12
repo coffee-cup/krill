@@ -146,9 +146,9 @@ evalExpr (EListAcc l eName eIdx) = do
               else return $ Char $ T.unpack s !! round n
             v ->
               throwError $ TypeMismatch l "list or string" v
-      else throwError $ IndexNotAnInteger l idx
+      else throwError $ NotAnInteger l idx
     _ ->
-      throwError $ IndexNotAnInteger l mList
+      throwError $ NotAnInteger l mList
 evalExpr (ERange _ eStart eNext eEnd) = do
   start <- evalExpr eStart
   next <- evalExpr eNext

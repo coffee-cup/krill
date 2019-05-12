@@ -4,6 +4,7 @@
 module Eval.BuiltIn where
 
 import           Control.Monad.Except
+import           Data.Char
 import           Data.Foldable
 import           Data.Text.Lazy       as T
 import           Data.Text.Lazy.IO    as T
@@ -45,10 +46,15 @@ builtIns =
   , ("ceil", mkB Eval.BuiltIn.ceil)
   , ("sin", mkB Eval.BuiltIn.sin)
   , ("cos", mkB Eval.BuiltIn.cos)
+  , ("charToCode", mkB Eval.BuiltIn.charToCode)
+  , ("codeToChar", mkB Eval.BuiltIn.codeToChar)
   ]
 
 mkB :: (Loc -> Value -> Eval Value) -> Value
 mkB fn = BuiltIn $ BFunc fn
+
+isInt :: RealFrac a => a -> Bool
+isInt x = x == fromInteger (round x)
 
 chain :: (Loc -> Value -> Eval Value) -> Eval Value
 chain = return . mkB
@@ -186,14 +192,29 @@ split l1 argDelim = do
             splitFn l1 argDelim argText)
   where
     splitFn :: Loc -> Value -> Value -> Eval Value
-    splitFn _ (String delim) (String text) = do
-      let xs = T.splitOn delim text
-      return $ List (fmap String xs)
+    splitFn _ (String delim) (String text) =
+      if delim == ""
+      then return $ List $ fmap Eval.Value.Char $ unpack text
+      else
+        let xs = T.splitOn delim text
+        in return $ List (fmap String xs)
     splitFn _ _ _ = error "fall through split"
 
 trim :: Loc -> Value -> Eval Value
 trim _ (String s) = return $ String $ T.strip s
 trim l v          = throwError $ TypeMismatch l "string" v
+
+charToCode :: Loc -> Value -> Eval Value
+charToCode _ (Eval.Value.Char c) = return $ Number $ fromIntegral $ ord c
+charToCode l v                   = throwError $ TypeMismatch l "char" v
+
+codeToChar :: Loc -> Value -> Eval Value
+codeToChar l v@(Number n) =
+  if Eval.BuiltIn.isInt n then
+    if n >= 0 && n <= 127 then return $ Eval.Value.Char $ chr (Prelude.floor n)
+    else throwError $ Default l "Input to codeToChar must be between 0 and 127"
+  else throwError $ NotAnInteger l v
+codeToChar l v          = throwError $ TypeMismatch l "number" v
 
 isString :: Loc -> Value -> Eval Value
 isString _ (String _) = return $ Bool True

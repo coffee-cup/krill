@@ -46,11 +46,20 @@ odd = x -> !(even x)
 assert (filter even $ map square [1..10]) [4,16,36,64,100]
 assert (filter odd $ map square [1..10]) [1,9,25,49,81]
 
+# strings
+
+assert (split "" "hello") ['h', 'e', 'l', 'l', 'o']
+assert (split "," "this,is,some,text") ["this", "is", "some", "text"]
+assert (trim "     \n\n\n hello world  \n ") "hello world"
+
 # to conversions
 
 assert (toString 3) "3"
 assert (toNumber "100") 100
 assert ((toString . toNumber) "100") "100"
+
+assert (charToCode 'a') 97
+assert (codeToChar $ 97) 'a'
 
 # is checks
 

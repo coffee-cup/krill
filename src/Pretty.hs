@@ -112,8 +112,8 @@ instance Pretty EvalError where
       withLocation l ("Error: Operator `" <> pp n <> "` Not Found")
     VariableAlreadyBound l n ->
       withLocation l ("Error: Variable `" <> pp n <> "` Already Bound")
-    IndexNotAnInteger l v ->
-      withLocation l ("Error: Index" <+> pp v <+> "is not an integer")
+    NotAnInteger l v ->
+      withLocation l ("Error:" <+> pp v <+> "is not an integer")
     IndexOutOfRange l i ->
       withLocation l ("Error: Index" <+> (integer i) <+> "is out of range")
     NoParse l to v ->
