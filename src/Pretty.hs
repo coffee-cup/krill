@@ -73,7 +73,7 @@ ppif c d = ppcond c d empty
 banner :: String
 banner = render $
   text ("\n" ++ ascii ++
-  "\n\n Krill 0.1.0\n")
+  "\n\n Krill 1.0.0\n")
   where
     ascii = " |  ._ o | |\n |< |  | | | "
 

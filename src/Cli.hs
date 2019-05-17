@@ -36,7 +36,6 @@ parseLineOpts :: Parser LineOpts
 parseLineOpts = parseFile <|> parseRepl
 
 parseOptions :: Parser Options
--- parseOptions = Options <$> parseLineOpts <*> parseFlags
 parseOptions = Options <$> parseLineOpts <*> pure emptyFlags
 
 runFile :: CompilerState -> FilePath -> IO ()
