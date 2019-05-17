@@ -2,6 +2,7 @@ module Cli
   ( cliIFace
   ) where
 
+import           Control.Applicative
 import           Data.Text.Lazy.IO   as T
 import           Options.Applicative
 
@@ -14,7 +15,7 @@ import           System.Exit
 
 data LineOpts
   = UseReplLineOpts
-  | RunFileLineOpts String
+  | RunFileLineOpts [String]
   deriving (Eq, Show)
 
 data Options = Options
@@ -25,9 +26,11 @@ data Options = Options
 parseRepl :: Parser LineOpts
 parseRepl = pure UseReplLineOpts
 
+manyStr :: Parser [String]
+manyStr = some (strArgument (metavar "file?" <> help "File to run. Start repl if no file provided."))
+
 parseFile :: Parser LineOpts
-parseFile = RunFileLineOpts
-  <$> argument str (metavar "file?" <> help "File to run. Start repl if not file provided.")
+parseFile = RunFileLineOpts <$> manyStr
 
 parseLineOpts :: Parser LineOpts
 parseLineOpts = parseFile <|> parseRepl
@@ -50,16 +53,17 @@ runFile cs fname = do
 
 krillEntry :: Options -> IO ()
 krillEntry opts = do
-  (cm , cs') <- runCompilerM loadStdlib cs
+  (_, cs') <- runCompilerM loadArgs cs
+  (cm , cs'') <- runCompilerM loadStdlib cs'
   case cm of
-    Right _  -> entry cs'
+    Right _  -> entry cs''
     Left err -> T.putStrLn $ ppg err
   where
     cs = emptyCS { _flags = flags opts }
     entry cs' = case lineOpt opts of
       UseReplLineOpts ->
         repl cs'
-      RunFileLineOpts fname ->
+      RunFileLineOpts (fname:_) ->
         runFile cs' fname
 
 cliIFace :: IO ()

@@ -9,6 +9,7 @@ import           Data.String
 import           Data.Text.Lazy       as T
 import           Data.Text.Lazy.IO    as T
 import           System.Directory
+import           System.Environment
 
 import           CompilerError
 import           Eval.Eval
@@ -94,3 +95,15 @@ loadStdlib = do
         Right _ -> modify (\st -> st { _evalS = es' })
         Left _  -> throwError $ StdlibError "Unable to eval"
     Left s -> throwError $ StdlibError s
+
+loadArgs :: CompilerM ()
+loadArgs = do
+  args <- inIO $ getArgs
+  es <- gets _evalS
+  let env = _env es
+  let valueArgs = fmap (Eval.Value.String . T.pack) args
+  let env' = setValue "args" (List valueArgs) env
+  let es' = es { _env = env' }
+  modify (\st -> st { _evalS = es' })
+  return ()
+
