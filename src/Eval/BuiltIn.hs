@@ -6,6 +6,7 @@ module Eval.BuiltIn where
 import           Control.Monad.Except
 import           Data.Char
 import           Data.Foldable
+import           Data.List
 import           Data.Text.Lazy       as T
 import           Data.Text.Lazy.IO    as T
 import           Data.Time.Calendar
@@ -31,6 +32,7 @@ builtIns =
   , ("writeFile", mkB Eval.BuiltIn.writeFile)
   , ("appendFile", mkB Eval.BuiltIn.appendFile)
   , ("split", mkB Eval.BuiltIn.split)
+  , ("intersperse", mkB Eval.BuiltIn.intersperse)
   , ("trim", mkB Eval.BuiltIn.trim)
   , ("isList", mkB Eval.BuiltIn.isList)
   , ("isNumber", mkB Eval.BuiltIn.isNumber)
@@ -183,6 +185,17 @@ appendFile l1 argFname = do
       liftIO $ T.appendFile (T.unpack fname) text
       return Unit
     appendFileFn _ _ _ = error "fall through appendFile"
+
+intersperse :: Loc -> Value -> Eval Value
+intersperse l1 argDelim = do
+  chain (\l2 argList -> do
+            checkListArg l2 argList
+            intersperseFn l1 argDelim argList)
+  where
+    intersperseFn :: Loc -> Value -> Value -> Eval Value
+    intersperseFn _ delim (List list) =
+      return $ List $ Data.List.intersperse delim list
+    intersperseFn _ _ _ = error "fall through intersperse"
 
 split :: Loc -> Value -> Eval Value
 split l1 argDelim = do

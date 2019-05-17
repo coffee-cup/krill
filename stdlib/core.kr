@@ -30,6 +30,8 @@ flatten = reduce (flat toFlatten -> {
   else flat ++ [toFlatten]
 }) []
 
+join = delim xs -> reduce (a b -> a ++ b) "" $ intersperse delim xs
+
 # Strings
 
 lines = split "\n"

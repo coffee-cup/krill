@@ -46,6 +46,14 @@ odd = x -> !(even x)
 assert (filter even $ map square [1..10]) [4,16,36,64,100]
 assert (filter odd $ map square [1..10]) [1,9,25,49,81]
 
+assert (intersperse "," ["hello", "world"]) ["hello",",","world"]
+assert (intersperse 0 [1,2,3]) [1,0,2,0,3]
+assert (intersperse "" []) []
+
+assert (join " " ["hello", "world"]) "hello world"
+assert (join "" ["hello", "world"]) "helloworld"
+assert (join "" []) ""
+
 # strings
 
 assert (split "" "hello") ['h', 'e', 'l', 'l', 'o']
