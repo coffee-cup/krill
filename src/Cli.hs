@@ -10,6 +10,7 @@ import           Flags
 import           Monad
 import           Pretty
 import           Repl
+import           System.Exit
 
 data LineOpts
   = UseReplLineOpts
@@ -42,7 +43,9 @@ runFile cs fname = do
 
   (res, _) <- runCompilerM compileFile cs'
   case res of
-    Left err -> T.putStrLn $ ppg err
+    Left err -> do
+      T.putStrLn $ ppg err
+      exitFailure
     Right _  -> return ()
 
 krillEntry :: Options -> IO ()
