@@ -15,7 +15,6 @@ import           System.Exit
 
 import           Compiler
 import           Eval.Value
-import           Flags
 import           Monad
 import           Pretty
 
@@ -74,17 +73,6 @@ showMsg s = liftIO $ T.putStrLn $ T.pack s
 showError :: String -> Repl ()
 showError s = liftIO $ T.putStrLn $ T.pack s
 
-changeFlag :: [String] -> String -> Bool -> Repl ()
-changeFlag [flag] _ change = do
-  cs <- gets _compilerState
-  let flags = _flags cs
-  case setFlag flag change flags of
-    Just flags' -> do
-      let cs' = cs { _flags = flags' }
-      modify (\st -> st { _compilerState = cs' })
-    Nothing -> showError $ "Flag " ++ flag ++ " is invalid"
-changeFlag _ name _ = showError $ name ++ " command requires flag name as argument"
-
 load :: [String] -> Repl ()
 load []         = showError "load requires a filename"
 load (fname:[]) = execFile fname
@@ -104,10 +92,10 @@ clear xs = mapM_ go xs
 
 help :: a -> Repl ()
 help _ = showMsg "Commands available \n\
-\  .load \t load source file into repl \n\
-\  .clear [name] \t clear name from env. \n\
-\  .help \t show this message \n\
-\  .quit \t quit the repl "
+\  .load          load source file into repl \n\
+\  .clear [name]  clear name from env \n\
+\  .help          show this message \n\
+\  .quit          quit the repl "
 
 quit :: a -> Repl ()
 quit _ = liftIO exitSuccess

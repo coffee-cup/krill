@@ -64,6 +64,8 @@ krillEntry opts = do
         repl cs'
       RunFileLineOpts (fname:_) ->
         runFile cs' fname
+      RunFileLineOpts _ ->
+        error "fall through krill entry"
 
 cliIFace :: IO ()
 cliIFace = customExecParser p opts >>= krillEntry
